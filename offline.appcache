@@ -1,0 +1,12 @@
+CACHE MANIFEST Version 1
+
+css/normalize.css
+css/index.css
+
+http://code.jquery.com/jquery-1.7.js
+js/modernizr-latest.js
+js/vendor/js-unzip.js
+js/vendor/js-inflate.js
+js/epub.js
+js/web-reader.js
+js/index.js

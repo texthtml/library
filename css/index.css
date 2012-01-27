@@ -1,0 +1,119 @@
+html, body {
+	overflow: auto;
+}
+
+body > section {
+	display: block;
+	width: 100%;
+	height: 100%;
+	position: fixed;
+	bottom: 0;
+}
+
+body > section > .wrap {
+	display: block;
+	width: 100%;
+	height: 100%;
+	bottom: 0;
+	position: absolute;
+	cursor: auto;
+}
+
+body > section > .wrap > .inner {
+	display: block;
+	margin-top: 3em;
+	position: absolute;
+	overflow: auto;
+	width: 100%;
+	bottom: 0;
+	top: 0;
+}
+
+#toc .inner {
+	margin-bottom: 3em;
+}
+
+#library, #toc {
+	background-color: #fefefe;
+	background-color: rgba(100, 100, 100, 0.2);
+	cursor: pointer;
+}
+
+#library .wrap {
+	background-color: #fef;
+}
+
+#library li a{
+	font-style: italic;
+	text-decoration: none;
+	color: gray;
+	display: block;
+}
+
+#library li a .title {
+	font-weight: bold;
+}
+
+#library .search.content {
+	display: none;
+}
+
+#library li:focus {
+	color: darkgreen;
+}
+
+#library li a * {
+	font-style: normal;
+	color: blacK;
+}
+
+#toc .wrap {
+	background-color: #eff;
+}
+
+.wrap:before {
+	display: block;
+	padding-left: 1em;
+	line-height: 3em;
+	cursor: pointer;
+	background-color: rgba(100, 50, 50, 0.1)
+}
+
+#toc .wrap:before {
+	content: 'Table Of Contents';
+}
+
+#library .wrap:before {
+	content: 'Library';
+}
+
+#toc navLabel {
+	color: blue;
+	cursor: pointer;
+}
+
+#toc navLabel:hover {
+	text-decoration: underline;
+}
+
+
+#toc navPoint {
+	display: block;
+	padding-left: 1em;
+}
+
+#toc navPoint navPoint navPoint, #toc pageList {
+	display: none;
+}
+
+#ebook > a {
+	display: none;
+}
+
+#ebook > article > iframe {
+	display: block;
+	border: 0;
+	width: 100%;
+	height: 100%;
+	position: fixed;
+}
