@@ -110,7 +110,7 @@ body > section > .wrap > .inner {
 	display: none;
 }
 
-#ebook > article > iframe {
+#ebook > iframe {
 	display: block;
 	border: 0;
 	width: 100%;
