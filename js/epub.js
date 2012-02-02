@@ -600,3 +600,5 @@ EPUB.Item.prototype = (function() {
 		}
 	};
 } ());
+
+WR.register('application/epub+zip', EPUB, 'epub');

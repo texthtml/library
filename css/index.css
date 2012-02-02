@@ -87,6 +87,13 @@ body > section > .wrap > .inner {
 	content: 'Library';
 }
 
+#library.loading .wrap:before {
+	background-image: url('../images/loading.gif');
+	background-repeat: no-repeat;
+	background-position: 4px center;
+	padding-left: 24px;
+}
+
 #toc navLabel {
 	color: blue;
 	cursor: pointer;

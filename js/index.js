@@ -1,11 +1,7 @@
 "use strict";
 
 $(function() {
-	$('#add_ebook').submit(function($e) {
-		$e.preventDefault();
-		var $file = $('input[type=file]', this).get(0).files[0];
-		WebReader.library.set($file);
-	});
+	var WebReader = new WR($('#ebook'));
 	
 	var list_ebooks = function() {
 		var $ebooks = WebReader.library.list(true).sort(function($e1, $e2) {
@@ -35,15 +31,16 @@ $(function() {
 		if(window === window.top) {
 			var 
 				$hash = window.location.hash.substr(1), 
-				$prefix = $hash.split('/')[0], 
-				$ebook = $hash.substr(1 + $prefix.length);
+				$pos = $hash.search('/'), 
+				$prefix = $hash.substr(0, $pos), 
+				$ebook = $hash.substr($pos + 1);
 			
 			if($prefix === 'ebook') {
-				$toc.close();
+				WebReader.open($ebook, null);
 			}
-			
-			if($ebook !== '') {
-				render_ebook($ebook);
+			else if($prefix === 'toc') {
+				$library.open();
+				$toc.close();
 			}
 			else {
 				$library.open();
@@ -51,16 +48,14 @@ $(function() {
 		}
 	};
 	
-	var goto_ebook = function() {
-		window.location.hash = $('nav a[idref=ebook]').attr('href');
-	};
-	
-	var Pane = function($target, $delta, $parent) {
+	var Pane = function($target, $delta, $parent, $close_callback) {
+		if(typeof $close_callback === 'undefined') {
+			$close_callback = this.close;
+		}
 		this.$target = $($target)
 			.on('click', function($evt) {
-				// console.log($evt.target === this.$target, $evt.target, this.$target);
 				if($evt.target === this.$target.get(0)) {
-					this.close();
+					$close_callback.call(this, $evt);
 				}
 			}.bind(this))
 			.on('mouseover', this.clear.bind(this))
@@ -212,77 +207,11 @@ $(function() {
 	};
 	
 	var 
-		$library = new Pane('#library', 3), 
+		$library = new Pane('#library', 3, undefined, function() {
+			console.log(window.location.hash)
+			window.location.hash = window.location.hash.replace(/^ebook/, 'test');
+		}), 
 		$toc = new Pane('#toc', 3, $library);
-	
-	
-	var next_page = function() {
-		var 
-			$ebook = WebReader.ebook(), 
-			$page = WebReader.current_page().next();
-		
-		render_ebook($ebook, $page);
-	};
-	
-	var prev_page = function() {
-		var 
-			$ebook = WebReader.ebook(), 
-			$page = WebReader.current_page().prev();
-		
-		render_ebook($ebook, $page);
-	};
-	
-	var render_ebook = function($ebook, $href) {
-		if(typeof $ebook === 'string') {
-			$ebook = WebReader.library.get($ebook);
-		}
-		
-		var $hash;
-		
-		if(typeof $href !== 'undefined') {
-			var $pos = $href.search('#');
-			if($pos !== -1) {
-				$hash = $href.substr($pos);
-				$href = $href.substr(0, $pos);
-			}
-		}
-		
-		var $page = WebReader.page($ebook, $href);
-		
-		$('#toc > .wrap > .inner').empty().append(WebReader.render_toc($ebook));
-		var $iframe = $(WebReader.render_page($page, $('#ebook').empty())).contents().get(0);
-		$('html', $iframe).on('mousemove', $toc.delay_reveal.bind($toc));
-		
-		var $next = WebReader.current_page().next()
-		if(typeof $next !== 'undefined') {
-			$('<a class="web-reader next" href="'+$next+'">next</a>')
-				.css({
-					display: 'block', 
-					borderTop: '1px solid lightgray', 
-					backgroundColor: 'rgba(0, 0, 0, 0.01)', 
-					lineHeight: '5em', 
-					paddingBottom: '6em', 
-					textAlign: 'center', 
-					textDecoration: 'none', 
-					marginTop: '50%', 
-					position: 'absolute', 
-					left: '0', 
-					right: '0'
-				})
-				.appendTo($('body', $iframe));
-		}
-		
-		$('a', $iframe).on('click', ebook_link);
-		
-		if(typeof $hash !== 'undefined') {
-			$($iframe).scrollTo($hash, 250);
-		}
-		
-		$('nav a[idref=toc]').attr('href', '#toc/'+$ebook.identifier());
-		
-		var $hash = '#ebook/'+$ebook.identifier();
-		$('nav a[idref=ebook]').attr('href', $hash);
-	};
 	
 	var ebook_link = function($evt) {
 		$evt.preventDefault();
@@ -290,18 +219,13 @@ $(function() {
 		var $href = $($evt.target).attr('href');
 		
 		window.setTimeout(
-			function() {render_ebook(WebReader.ebook(), $href)}, 0
+			function() {WebReader.goto($href);}, 0
 		);
 	}
 	
 	var toc_link = function($evt) {
-		$($evt.target).attr(
-			'href', 
-			$($evt.currentTarget).siblings('content').attr('src')
-		);
-		ebook_link($evt);
-		
-		$toc.close();
+		$evt.preventDefault();
+		WebReader.goto($($evt.currentTarget).siblings('content').attr('src'))
 	}
 
 	var filter_library = function($evt) {
@@ -319,29 +243,120 @@ $(function() {
 			$('#library li:not(:contains("' + $filter + '"))').hide();
 		}
 	}
+
+	var background = function($fct) {
+		return function() {
+			var $args = arguments;
+			window.setTimeout(
+				function() {
+					$fct.apply(this, $args);
+				}.bind(this), 
+				0
+			);
+		}
+	};
+
+	$('#add_ebook').on('submit', background(function($e) {
+		$e.preventDefault();
+		var $file = $('input[type=file]', this).get(0).files[0];
+		WebReader.library.set($file);
+	}));
 	
 	$($library).on('opened', function() {
 		$('#library_filter input[name=filter]').select();
 	});
 
 	$(document)
-		.on('click', '#toc navLabel', toc_link)
-		.on('click', '#library button[name=delete]', function($e) {
+		.on('click', '#toc navLabel', background(toc_link))
+		.on('click', '#library button[name=delete]', background(function($e) {
 			$e.preventDefault();
 			WebReader.library.del($($e.target).parent().parent().attr('id'));
+		}));
+	$(window).on('hashchange', background(hash_change));
+	$(WebReader)
+		.on('opening', function($evt) {
+			$('#library').addClass('loading');
+		})
+		.on('opened', function($evt) {
+			$('#library').removeClass('loading');
+			WebReader.render_toc($('#toc > .wrap > .inner').empty());
+		})
+		.on('goingto', function($evt) {
+		})
+		.on('goneto', function($evt) {
+			$toc.close();
+		})
+		.on('rendered', function($evt) {
+			var 
+				$iframe = $evt.$iframe.contentDocument, 
+				$next = WebReader.next();
+			
+			if(typeof $next !== 'undefined') {
+				$('<a class="web-reader next" href="'+$next+'">next</a>')
+					.css({
+						display: 'block', 
+						borderTop: '1px solid lightgray', 
+						backgroundColor: 'rgba(0, 0, 0, 0.01)', 
+						lineHeight: '5em', 
+						paddingBottom: '6em', 
+						textAlign: 'center', 
+						textDecoration: 'none', 
+						marginTop: '50%', 
+						position: 'absolute', 
+						left: '0', 
+						right: '0'
+					})
+					.appendTo($('body', $iframe));
+				
+				$('html', $iframe).on('mousemove', $toc.delay_reveal.bind($toc));
+				$('a', $iframe).on('click', ebook_link);
+			}
 		});
-	$(window).on('hashchange', hash_change);
 	$(WebReader.library)
+		.on('inserting', function() {
+			$('#library').addClass('loading');
+		})
+		.on('inserted', function() {
+			$('#library').removeClass('loading');
+		})
 		.on('changed', list_ebooks)
 		.on('stored', function($evt) {
-		$('#'+$evt.ebook.identifier().value+' a').focus();
-	});
+			$('#'+$evt.$ebook.identifier().value+' a').focus();
+		});
 	$('#ebook').on('mousemove', $toc.delay_reveal.bind($toc));
 
 	$('#library_filter')
 		.on('input', filter_library)
 		.on('submit', function($evt) {$evt.preventDefault();});
 	
-	list_ebooks();
-	hash_change();
-})
+	background(list_ebooks)();
+	background(hash_change)();
+});
+
+
+jQuery.fn.getPath = function() {
+	if(this.length != 1) throw 'Requires one element.';
+	
+	var path, node = this;
+	while(node.length) {
+		var realNode = node[0], name = realNode.localName;
+		if(!name) break;
+		
+		name = name.toLowerCase();
+		if(realNode.id) {
+			// As soon as an id is found, there's no need to specify more.
+			return name + '#' + realNode.id + (path ? '>' + path : '');
+		}
+		else if(realNode.className) {
+			name += '.' + realNode.className.split(/\s+/).join('.');
+		}
+		
+		var parent = node.parent(), siblings = parent.children(name);
+		if(siblings.length > 1) name += ':eq(' + siblings.index(node) + ')';
+		path = name + (path ? '>' + path : '');
+		
+		node = parent;
+	}
+	
+	return path;
+};
