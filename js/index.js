@@ -35,16 +35,30 @@ $(function() {
 				$prefix = $hash.substr(0, $pos), 
 				$ebook = $hash.substr($pos + 1);
 			
-			if($prefix === 'ebook') {
+			if($pos != -1) {
 				WebReader.open($ebook, null);
 			}
-			else if($prefix === 'toc') {
-				$library.open();
-				$toc.close();
+			
+			if($prefix === 'library' || $pos === -1) {
+				hash_change.move_pane();
 			}
-			else {
-				$library.open();
-			}
+		}
+	};
+	hash_change.move_pane = function() {
+		var 
+			$hash = window.location.hash.substr(1), 
+			$pos = $hash.search('/'), 
+			$prefix = $hash.substr(0, $pos);
+		
+		if($prefix === 'ebook') {
+			$toc.close();
+		}
+		else if($prefix === 'toc') {
+			$toc.open();
+			$library.close();
+		}
+		else {
+			$library.open();
 		}
 	};
 	
@@ -208,10 +222,11 @@ $(function() {
 	
 	var 
 		$library = new Pane('#library', 3, undefined, function() {
-			console.log(window.location.hash)
-			window.location.hash = window.location.hash.replace(/^ebook/, 'test');
+			window.location.hash = window.location.hash.replace(/^#library\//, '#toc/');
 		}), 
-		$toc = new Pane('#toc', 3, $library);
+		$toc = new Pane('#toc', 3, $library, function() {
+			window.location.hash = window.location.hash.replace(/^#toc\//, '#ebook/');
+		});
 	
 	var ebook_link = function($evt) {
 		$evt.preventDefault();
@@ -284,7 +299,7 @@ $(function() {
 		.on('goingto', function($evt) {
 		})
 		.on('goneto', function($evt) {
-			$toc.close();
+			hash_change.move_pane();
 		})
 		.on('rendered', function($evt) {
 			var 
