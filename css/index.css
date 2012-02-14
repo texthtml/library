@@ -3,124 +3,83 @@ html, body {
 }
 
 body > section {
+	margin: 15em 0;
+}
+
+/*body > section {
 	display: block;
-	width: 100%;
-	height: 100%;
 	position: fixed;
 	bottom: 0;
-}
-
-body > section > .wrap {
-	display: block;
-	width: 100%;
-	height: 100%;
-	bottom: 0;
-	position: absolute;
-	cursor: auto;
-}
-
-body > section > .wrap > .inner {
-	display: block;
-	margin-top: 3em;
-	position: absolute;
-	overflow: auto;
-	width: 100%;
-	bottom: 0;
 	top: 0;
-}
+	left: 0;
+	right: 0;
+}*/
 
-#toc .inner {
-	margin-bottom: 3em;
-}
-
-#library, #toc {
-	background-color: #fefefe;
-	background-color: rgba(100, 100, 100, 0.2);
-	cursor: pointer;
-}
-
-#library .wrap {
-	background-color: #fef;
-}
-
-#library li a{
+section.library li a{
 	font-style: italic;
 	text-decoration: none;
 	color: gray;
 	display: block;
 }
 
-#library li a .title {
+.pane {
+	background-color: rgba(100, 100, 100, 0.1);
+	padding-top: 2em;
+}
+
+.pane > a.open {
+	position: absolute;
+	line-height: 2em;
+	background-color: rgba(100, 100, 100, 0.2);
+	display: block;
+	width: 100%;
+}
+
+section.library li a .title {
 	font-weight: bold;
 }
 
-#library .search.content {
+section.library .search.content {
 	display: none;
 }
 
-#library li:focus {
+section.library li:focus {
 	color: darkgreen;
 }
 
-#library li a * {
+section.library li a * {
 	font-style: normal;
 	color: blacK;
 }
 
-#toc .wrap {
-	background-color: #eff;
-}
 
-.wrap:before {
-	display: block;
-	padding-left: 1em;
-	line-height: 3em;
-	cursor: pointer;
-	background-color: rgba(100, 50, 50, 0.1)
-}
-
-#toc .wrap:before {
-	content: 'Table Of Contents';
-}
-
-#library .wrap:before {
-	content: 'Library';
-}
-
-#library.loading .wrap:before {
-	background-image: url('../images/loading.gif');
-	background-repeat: no-repeat;
-	background-position: 4px center;
-	padding-left: 24px;
-}
-
-#toc navLabel {
+section.toc navLabel {
 	color: blue;
 	cursor: pointer;
 }
 
-#toc navLabel:hover {
+section.toc navLabel:hover {
 	text-decoration: underline;
 }
 
 
-#toc navPoint {
+section.toc navPoint {
 	display: block;
 	padding-left: 1em;
 }
 
-#toc navPoint navPoint navPoint, #toc pageList {
+section.toc navPoint navPoint navPoint, #toc pageList {
 	display: none;
 }
 
-#ebook > a {
+section.ebook > a {
 	display: none;
 }
 
-#ebook > iframe {
+section.ebook > iframe {
 	display: block;
 	border: 0;
 	width: 100%;
 	height: 100%;
-	position: fixed;
+	/*position: absolute;*/
 }

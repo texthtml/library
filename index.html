@@ -14,13 +14,19 @@
 		<title>web reader</title>
 	</head>
 	<body>
-		<section id="ebook">
+		<section id="ebook" data-id-prefix="ebook" class="ebook">
 		</section>
 		
-		<section id="toc">
+		<section id="toc" data-id-prefix="toc" class="toc">
+			<a href="#library" data-id-prefix="toc" class="nav open"><h1>Table of Contents</h1></h1>
+			<a href="#ebook" data-id-prefix="ebook" class="nav hide">hide toc</a>
+			<div class="content">
+			</div>
 		</section>
 		
-		<section id="library">
+		<section id="library" data-id-prefix="library"> class="library"
+			<a href="#library" data-id-prefix="library" class="nav open"><h1>Library</h1></a>
+			<a href="#toc" data-id-prefix="toc" class="nav hide">hide library</a>
 			<form action="#" id="library_filter" accept-charset="utf-8">
 				<p>
 					<input autofocus type="search" name="filter" placeholder="filter library" tabindex="1"/>
