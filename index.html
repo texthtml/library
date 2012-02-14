@@ -68,7 +68,7 @@
 							{{=$data['0']['value']['toLowerCase']()}}
 						{{/each}}
 						{{#if metadata.series}}{{=metadata.series.value.toLowerCase()}}{{/if}}
-						{{#if metadata.series_index}}{{=metadata.series_index.value()}}{{/if}}
+						{{#if metadata.series_index}}{{=metadata.series_index.value}}{{/if}}
 					</div>
 					<button name="delete">delete</button>
 					{{#if metadata.series}}<span class="series">{{=metadata.series.value}} − </span>{{/if}}

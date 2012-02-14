@@ -8,6 +8,7 @@ window.WR = (function() {
 			$range.selectNodeContents($el);
 			return $range.getBoundingClientRect();
 		}, 
+		worker = new Worker('js/web-reader-worker.js'), 
 		storage = function() {
 			if(!('sessionStorage' in window)) {
 				alert('no session storage support');
@@ -16,6 +17,10 @@ window.WR = (function() {
 			return window.sessionStorage;
 		};
 	
+	worker.postMessage('start');
+
+	$(worker).on('message', console.info);
+
 	var WR = function($target) {
 		this.$target = $target;
 	};
