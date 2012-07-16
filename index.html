@@ -5,47 +5,159 @@
 	<head>
 		<meta charset="utf-8" />
 		
-		<link type="text/css" rel="stylesheet" href="css/normalize.css" />
-		<link type="text/css" rel="stylesheet" href="css/index.css" />
+		<link type="text/css" rel="stylesheet" href="style/normalize.css" />
+		<link type="text/less" rel="stylesheet" href="style/index.less" />
 
 		
-		<script src="js/modernizr-latest.js"></script>
+		<script src="js/vendor/less-1.3.0.min.js"></script>
+		<script src="js/vendor/modernizr-latest.js"></script>
 		
 		<title>web reader</title>
 	</head>
 	<body>
-		<section id="ebook" data-id-prefix="ebook" class="ebook">
-		</section>
 		
+<!--
 		<section id="toc" data-id-prefix="toc" class="toc">
 			<a href="#library" data-id-prefix="toc" class="nav open"><h1>Table of Contents</h1></h1>
 			<a href="#ebook" data-id-prefix="ebook" class="nav hide">hide toc</a>
 			<div class="content">
 			</div>
 		</section>
+-->
+		<div class="pane" id="bookmarks">
+			<header>
+				<h1>Bookmarks</h1>
+			</header>
+			
+			<div class="content">
+			</div>
+			
+			<a class="back" href="#library">Back</a>
+		</div>
 		
-		<section id="library" data-id-prefix="library" class="library">
-			<a href="#library" data-id-prefix="library" class="nav open"><h1>Library</h1></a>
-			<a href="#toc" data-id-prefix="toc" class="nav hide">hide library</a>
-			<form action="#" id="library_filter" accept-charset="utf-8">
-				<p>
-					<input autofocus type="search" name="filter" placeholder="filter library" tabindex="1"/>
-				</p>
-			</form>
-			<ul></ul>
-			<form id=add_ebook action="#">
-				<p>
-					<input type=file />
-					<input type=submit />
-				</p>
-			</form>
-		</section>
+		<div class="pane" id="settings">
+			<header>
+				<h1>Settings</h1>
+			</header>
+			
+			<div class="content">
+			</div>
+			
+			<a class="back" href="#library">Back</a>
+		</div>
 		
-		<script src="http://code.jquery.com/jquery-1.7.js"></script>
+		<div class="pane" id="add">
+			<header>
+				<h1>Add EBook</h1>
+			</header>
+			
+			<div class="content">
+				<form id=add_ebook action="#">
+					<p>
+						<input type=file />
+						<input type=submit />
+					</p>
+				</form>
+			</div>
+			
+			<a class="back" href="#library">Back</a>
+		</div>
+		
+		<div class="pane" id="tos">
+			<header>
+				<h1>Terms of Service</h1>
+			</header>
+			
+			<div class="content">
+			</div>
+			
+			<a class="back" href="#library">Back</a>
+		</div>
+		
+		<div class="ebook pane bookmarks" data-prefix="ebook-bookmarks" id="ebook-bookmarks">
+			<header>
+				<h1>Bookmarks</h1>
+			</header>
+			
+			<div class="content">
+			</div>
+			
+			<a class="back" href="#ebook" data-prefix="ebook">Back</a>
+		</div>
+		
+		<div class="ebook pane settings"  data-prefix="ebook-settings"  id="ebook-settings">
+			<header>
+				<h1>Settings</h1>
+			</header>
+			
+			<div class="content">
+			</div>
+			
+			<a class="back" href="#ebook" data-prefix="ebook">Back</a>
+		</div>
+		
+		<div class="ebook pane toc"       data-prefix="toc"             id="toc">
+			<header>
+				<h1>Table of Contents</h1>
+			</header>
+			
+			<div class="content">
+			</div>
+			
+			<a class="back" href="#ebook" data-prefix="ebook">Back</a>
+		</div>
+		
+		<div class="ebook"                data-prefix="ebook"           id="ebook">
+			<header>
+				<a href="#library">Library</a>
+				<h1>EBook</h1>
+			</header>
+			
+			<div class="content"></div>
+			
+			<footer>
+				<nav>
+					<ul>
+						<li><a data-prefix="ebook-bookmarks" href="#ebook-bookmarks">Bookmarks</a></li>
+						<li><a data-prefix="ebook-settings"  href="#ebook-settings">Settings</a></li>
+						<li><a data-prefix="toc"             href="#toc"><abbr>Table of Contents</abbr></a></li>
+						<li><a                               href="#fullscreen">Fullscreen</a></li>
+					</ul>
+				</nav>
+			</footer>
+		</div>
+		
+		<div id="library" class="library">
+			<header>
+				<h1>Library</h1>
+			</header>
+			
+			<div class="content">
+				<form action="#" id="library-filter" accept-charset="utf-8">
+					<p>
+						<input autofocus type="search" name="filter" placeholder="filter library" tabindex="1"/>
+					</p>
+				</form>
+				<ul id="library-list"></ul>
+			</div>
+			
+			<footer>
+				<nav>
+					<ul>
+						<li><a href="#bookmarks">Bookmarks</a></li>
+						<li><a href="#settings">Settings</a></li>
+						<li><a href="#add">Add EBook</a></li>
+						<li><a href="#tos"><abbr title="Terms of Service">ToS</abbr></a></li>
+					</ul>
+				</nav>
+			</footer>
+		</div>
+		
+		<script src="http://code.jquery.com/jquery-1.7.2.js"></script>
 		
 		<script src="js/vendor/js-unzip.js"></script>
 		<script src="js/vendor/js-inflate.js"></script>
-		<script src="js/vendor/jsrender.js"></script>
+		<script src="js/vendor/jsrender/jsrender.js"></script>
 		<script src="js/vendor/jquery.scrollTo-1.4.2-min.js"></script>
 		
 		<script src="js/web-reader.js"></script>
@@ -57,9 +169,10 @@
 			overrideConsole: false,
 			startOpened: true,
 		}</script>
--->
 		
-		<script id="library-item" type="text/html">
+		
+		
+		
 			<li id="{{=identifier}}"  class="ebook {{=type}}" xml:lang="{{=language.value}}">
 				<a href="#ebook/{{=identifier}}" tabindex="{{=$itemNumber+1}}">
 					<div class="search content">
@@ -79,6 +192,20 @@
 						{{#if $itemNumber>1}}, {{/if}}
 						<span class="creator">{{=$data['0']['value']}}</span>
 					{{/each}}
+				</a>
+			</li>
+-->
+		
+		<script id="library-item" type="text/x-jsrender">
+			<li id="{{:identifier}}"  class="ebook {{:type}}" xml:lang="{{:language.value}}">
+				<a href="#ebook/{{:identifier}}" tabindex="{{:#index+1}}">
+					<button name="delete">delete</button>
+					{{if metadata.series}}<span class="series">{{:metadata.series.value}} − </span>{{/if}}
+					{{if metadata.series_index}}<span class="series_index">{{:metadata.series_index.value}} − </span>{{/if}}
+					<span class="title">{{:title.value}}</span>
+					by
+					{{for creators}}{{if #index > 0}}, {{/if}}
+						<span class="creator">{{:value}}</span>{{/for}}
 				</a>
 			</li>
 		</script>

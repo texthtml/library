@@ -1,6 +1,5 @@
-"use strict";
-
 window.WR = (function() {
+	"use strict";
 	
 	var 
 		rect = function($el) {
@@ -8,7 +7,6 @@ window.WR = (function() {
 			$range.selectNodeContents($el);
 			return $range.getBoundingClientRect();
 		}, 
-		worker = new Worker('js/web-reader-worker.js'), 
 		storage = function() {
 			if(!('sessionStorage' in window)) {
 				alert('no session storage support');
@@ -16,14 +14,8 @@ window.WR = (function() {
 			
 			return window.sessionStorage;
 		};
-	
-	worker.postMessage('start');
 
-	$(worker).on('message', console.info);
-
-	var WR = function($target) {
-		this.$target = $target;
-	};
+	var WR = function() {};
 	
 	WR.prototype = {
 		library: (function() {
@@ -52,7 +44,7 @@ window.WR = (function() {
 						
 						$ebooks     = ebooks();
 					
-					var $existed = typeof $ebooks[$identifier] !== 'undefined';
+					var $existed = $ebooks[$identifier] !== undefined;
 					$ebooks[$identifier] = {
 						title     : $title, 
 						language  : $language, 
@@ -90,7 +82,7 @@ window.WR = (function() {
 
 					var $handler = WR.handler($file.type);
 
-					if(typeof $handler !== 'undefined') {
+					if($handler !== undefined) {
 						var $reader = new FileReader();
 						
 						$reader.onloadend = function($e) {
@@ -140,9 +132,9 @@ window.WR = (function() {
 				get: function($identifier) {
 					var 
 						$ebook = ebooks()[$identifier], 
-						$handler = (typeof $ebook === 'undefined')?undefined:WR.handler($ebook.type);
+						$handler = ($ebook === undefined)?undefined:WR.handler($ebook.type);
 					
-					if(typeof $handler !== 'undefined') {
+					if($handler !== undefined) {
 						return new $handler.factory(storage().getItem('ebook.'+$identifier));
 					}
 				}
@@ -151,10 +143,10 @@ window.WR = (function() {
 			return new Library();
 		} ()), 
 		
-		open: function($ebook) {
+		open: function($target, $ebook) {
 			var $event;
 			if(
-				typeof this.$ebook === 'undefined' || 
+				this.$ebook === undefined || 
 				$ebook !== this.ebook().identifier()
 			) {
 				this.$ebook = undefined;
@@ -162,23 +154,23 @@ window.WR = (function() {
 				this.$ebook_id = $ebook;
 				
 				$event         = $.Event('opening');
-				$event.$ebook  = this.$ebook;
+				$event.$ebook  = this.ebook();
 				$(this).trigger($event);
 			}
 
-			this.goto();
+			this.goto($target);
 			
-			if(typeof $event !== 'undefined') {
+			if($event !== undefined) {
 				$event         = $.Event('opened');
 				$event.$ebook  = this.$ebook;
 				$(this).trigger($event);
 			}
 		}, 
-		goto: function($href, $hash, $delta) {
-			if(typeof $delta === 'undefined') {
+		goto: function($target, $href, $hash, $delta) {
+			if($delta === undefined) {
 				$delta = 0;
 			}
-			if(typeof $href !== 'undefined' && typeof $hash === 'undefined') {
+			if($href !== undefined && $hash === undefined) {
 				var $pos = $href.search('#');
 				if($pos !== -1) {
 					$hash = $href.substr($pos);
@@ -196,10 +188,10 @@ window.WR = (function() {
 				this.$href = $href;
 				this.$page = undefined;
 				
-				this.render();
+				this.render($target);
 			}
 			
-			if(typeof $hash !== 'undefined') {
+			if($hash !== undefined) {
 				var 
 					$matches = /(.*):text\((\d*)\)/.exec($hash), 
 					$el;
@@ -217,17 +209,17 @@ window.WR = (function() {
 				var 
 					$r = rect($el), 
 					$offset = Math.floor($r.top-$r.height*$delta);
-				console.log($hash, $el, $r, $offset);
+				//~ console.log($hash, $el, $r, $offset);
 				$(this.$iframe.contentDocument).scrollTo(
 					'+='+$offset+'px', 
 					250
 				);
 			}
 			
-			var $event     = $.Event('goneto');
-			$event.$href   = this.$href;
-			$event.$page   = this.$page;
-			$event.$hash   = $hash;
+			var $event   = $.Event('goneto');
+			$event.$href = this.$href;
+			$event.$page = this.$page;
+			$event.$hash = $hash;
 			
 			$(this).trigger($event);
 		}, 
@@ -235,7 +227,7 @@ window.WR = (function() {
 			return this.$href;
 		}, 
 		page: function() {
-			if(typeof this.$page === 'undefined') {
+			if(this.$page === undefined) {
 				this.$page = this.ebook().page(this.$href);
 			}
 			
@@ -254,7 +246,7 @@ window.WR = (function() {
 			this.goto(this.prev());
 		}, 
 		ebook: function() {
-			if(typeof this.$ebook === 'undefined') {
+			if(this.$ebook === undefined) {
 				this.$ebook = this.library.get(this.$ebook_id);
 			}
 			return this.$ebook;
@@ -262,10 +254,10 @@ window.WR = (function() {
 		render_toc: function($target) {
 			return $(this.ebook().toc().content()).appendTo($target);
 		}, 	
-		render: function() {
+		render: function($target) {
 			this.$iframe = document.createElement("iframe");
 			
-			this.$target.empty().append(this.$iframe);
+			$target.empty().append(this.$iframe);
 			
 			this.$iframe.contentDocument.open();
 			this.$iframe.contentDocument.write(this.page().html());
@@ -295,7 +287,7 @@ window.WR = (function() {
 						});
 					
 						var $e = $.makeArray($nodes).reduce(function($previous, $current) {
-							if(typeof $previous === 'undefined') {
+							if($previous === undefined) {
 								return $current;
 							}
 							
@@ -306,10 +298,10 @@ window.WR = (function() {
 							return ($top_current < $top_previous)?$current:$previous;
 						}, undefined);
 						
-						if(typeof $e !== 'undefined') {
+						if($e !== undefined) {
 							$el = $($e);
 						}
-					} while(typeof $e !== 'undefined');
+					} while($e !== undefined);
 					
 					return $el;
 				}, 
@@ -319,7 +311,7 @@ window.WR = (function() {
 						$el = top_in_viewport($('body', $iframe)), 
 						$rect = rect($el.get(0)), 
 						$path = $el.getPath();
-					if(typeof $path === 'undefined') {
+					if($path === undefined) {
 						$path = 
 							$el.parent().getPath() + 
 							':text(' + 

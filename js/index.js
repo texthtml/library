@@ -1,8 +1,32 @@
-"use strict";
-
 $(function() {
-	var WebReader = new WR($('#ebook'));
-
+	"use strict";
+	
+	var 
+		$ebook_el = $('#ebook'), 
+		$toc_el   = $('#toc'), 
+		$current_ebook;
+	
+	$('div[id]').each(function($_, $el) {
+		$el.id = 'x-' + $el.id;
+	});
+	
+	$('a[href=#fullscreen]').click(function($event) {
+		$event.preventDefault();
+		
+		var $ebook = $ebook_el.find('.content')[0];
+		if ($ebook.requestFullScreen) {
+			$ebook.requestFullScreen();
+		}
+		else if($ebook.mozRequestFullScreen) {
+			$ebook.mozRequestFullScreen();
+		}
+		else if($ebook.webkitRequestFullScreen) {
+			$ebook.webkitRequestFullScreen();
+		}
+	});
+	
+	var WebReader = new WR();
+	
 	window.$wr = WebReader;
 	
 	var list_ebooks = function() {
@@ -23,8 +47,8 @@ $(function() {
 			return $s1.localeCompare($s2);
 		});
 		
-		$('#library_filter input[name=filter]').val('');
-		$('#library > ul').html(
+		$('#library-filter input[name=filter]').val('');
+		$('#library-list').html(
 			$('#library-item').render($ebooks)
 		);
 	};
@@ -35,114 +59,88 @@ $(function() {
 				$hash = window.location.hash.substr(1), 
 				$pos = $hash.search('/'), 
 				$prefix = $hash.substr(0, $pos), 
-				$ebook = $hash.substr($pos + 1);
+				$ebook = ($pos === -1) ? undefined : $hash.substr($pos + 1);
 			
-			if($pos != -1) {
-				WebReader.open($ebook, null);
+			$('.target').removeClass('target');
+			
+			if($ebook !== $current_ebook && $ebook !== undefined) {
+				$current_ebook = $ebook;
+				WebReader.open($ebook_el.find('.content'), $ebook, null);
+				
+				$('[data-prefix][id]').each(function($_, $el) {
+					$el.id = 'x-' + $($el).data('prefix') + '/' + $ebook;
+				});
+				
+				$('a[data-prefix]').each(function($_, $el) {
+					$el.href = '#' + $($el).data('prefix') + '/' + $ebook;
+				});
 			}
 			
-			if($prefix === 'library' || $pos === -1) {
-				hash_change.move_pane();
-			}
+			$(document.getElementById('x-'+$hash)).addClass('target');
 		}
 	};
-
-	hash_change.move_pane = function() {
-		var 
-			$hash = window.location.hash.substr(1), 
-			$pos = $hash.search('/'), 
-			$prefix = $hash.substr(0, $pos);
-		
-		if($prefix === 'ebook') {
-			//$toc.close();
-		}
-		else if($prefix === 'toc') {
-			//$toc.open();
-			//$library.close();
-		}
-		else {
-			//$library.open();
-		}
-	};
-
+	
 	var ebook_link = function($evt) {
 		$evt.preventDefault();
 		
 		var $href = $($evt.target).attr('href');
 		
 		window.setTimeout(
-			function() {WebReader.goto($href);}, 0
+			function() {WebReader.goto($ebook_el.find('.content'), $href);}, 0
 		);
 	}
 	
 	var toc_link = function($evt) {
 		$evt.preventDefault();
-		WebReader.goto($($evt.currentTarget).siblings('content').attr('src'))
+		WebReader.goto($ebook_el.find('.content'), $($evt.currentTarget).siblings('content').attr('src'));
+		window.location.hash = $ebook_el.data('prefix') + '/' + $current_ebook;
 	}
-
+	
 	var filter_library = function($evt) {
-		if(typeof $evt === 'undefined') {
-			$evt.preventDefault();
-		}
-		
-		var $filter = $('#library_filter input[name=filter]').val().trim().toLowerCase();
-		
-		if($filter === '') {
-			$('#library li').show();
-		}
-		else {
-			$('#library li:contains("' + $filter + '")').show();
-			$('#library li:not(:contains("' + $filter + '"))').hide();
-		}
+		//~ if(typeof $evt === 'undefined') {
+			//~ $evt.preventDefault();
+		//~ }
+		//~ 
+		//~ var $filter = $('#library_filter input[name=filter]').val().trim().toLowerCase();
+		//~ 
+		//~ if($filter === '') {
+			//~ $('#library li').show();
+		//~ }
+		//~ else {
+			//~ $('#library li:contains("' + $filter + '")').show();
+			//~ $('#library li:not(:contains("' + $filter + '"))').hide();
+		//~ }
 	}
-
+	
 	$('#add_ebook').on('submit', function($e) {
 		$e.preventDefault();
 		var $file = $('input[type=file]', this).get(0).files[0];
 		WebReader.library.set($file);
+		window.location.hash = 'library';
 	});
 	
-	/*
-	$($library).on('opened', function() {
+	$(WebReader.library).on('opened', function() {
 		$('#library_filter input[name=filter]').select();
 	});
-	*/
-
-	$(document)
-		.on('click', '#toc navLabel', toc_link)
-		.on('click', '#library button[name=delete]', function($e) {
-			$e.preventDefault();
-			WebReader.library.del($($e.target).parent().parent().attr('id'));
-		});
+	
+	$('#x-toc').on('click', 'navLabel', toc_link);
+	$('#x-library').on('click', 'button[name=delete]', function($e) {
+		$e.preventDefault();
+		WebReader.library.del($($e.target).parent().parent().attr('id'));
+	});
 	$(window).on('hashchange', hash_change);
 	$(WebReader)
 		.on('opening', function($evt) {
-			$('#library').addClass('loading');
+			$ebook_el.find('header h1').html($evt.$ebook.title().value);
+			$('#x-library').addClass('loading');
 		})
 		.on('opened', function($evt) {
-			$('#library').removeClass('loading');
-			WebReader.render_toc($('#toc .content').empty());
-			console.log($evt);
-
-			var update_with_prefix = function($id) {
-				return function($attribute_name, $prefix) {
-					if(typeof $prefix === 'undefined') {
-						$prefix = '';
-					}
-					return function() {
-						var $attribute_value= $prefix + $(this).data('id-prefix') + '/' + $id.value;
-						$(this).attr($attribute_name, $attribute_value);
-					};
-				};
-			} ($evt.$ebook.identifier());
-
-			$('[data-id-prefix]:not(a)').each(update_with_prefix('id'));
-			$('a[data-id-prefix]').each(update_with_prefix('href', '#'));
+			$('#x-library').removeClass('loading');
+			WebReader.render_toc($toc_el.find('.content').empty());
 		})
 		.on('goingto', function($evt) {
 		})
 		.on('goneto', function($evt) {
-			hash_change.move_pane();
 		})
 		.on('rendered', function($evt) {
 			var 
@@ -156,19 +154,17 @@ $(function() {
 						borderTop: '1px solid lightgray', 
 						backgroundColor: 'rgba(0, 0, 0, 0.01)', 
 						lineHeight: '5em', 
-						paddingBottom: '6em', 
 						textAlign: 'center', 
 						textDecoration: 'none', 
-						marginTop: '50%', 
+						marginTop: '10em', 
 						position: 'absolute', 
 						left: '0', 
 						right: '0'
 					})
 					.appendTo($('body', $iframe));
-				
-//				$('html', $iframe).on('mousemove', $toc.delay_reveal.bind($toc));
-				$('a', $iframe).on('click', ebook_link);
 			}
+			
+			$('a', $iframe).on('click', ebook_link);
 		});
 	$(WebReader.library)
 		.on('inserting', function() {
@@ -181,7 +177,7 @@ $(function() {
 		.on('stored', function($evt) {
 			$('#'+$evt.$ebook.identifier().value+' a').focus();
 		});
-
+	
 	$('#library_filter')
 		.on('input', filter_library)
 		.on('submit', function($evt) {$evt.preventDefault();});
@@ -202,7 +198,7 @@ jQuery.fn.getPath = function() {
 		name = name.toLowerCase();
 		if(realNode.id) {
 			// As soon as an id is found, there's no need to specify more.
-			return name + '#' + realNode.id + (path ? '>' + path : '');
+			return name + '#' + realNode.id  + (path ? '>' + path : '');
 		}
 		else if(realNode.className) {
 			name += '.' + realNode.className.split(/\s+/).join('.');

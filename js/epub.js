@@ -329,7 +329,7 @@ EPUB.RootFile.prototype = (function() {
 	var nodesText = function($nodes) {
 		return $nodes.map(function($i, $node) {
 			return  {value: $($node).text().trim(), ns: 'dc'};
-		});
+		}).toArray();
 	};
 	
 	var $metadata = {
