@@ -1,3 +1,4 @@
+
 window.WR = (function() {
 	"use strict";
 	
@@ -252,12 +253,12 @@ window.WR = (function() {
 			return this.$ebook;
 		}, 
 		render_toc: function($target) {
-			return $(this.ebook().toc().content()).appendTo($target);
+			return $(this.ebook().toc().content()).appendTo($($target).empty());
 		}, 	
 		render: function($target) {
 			this.$iframe = document.createElement("iframe");
 			
-			$target.empty().append(this.$iframe);
+			$($target).empty().append(this.$iframe);
 			
 			this.$iframe.contentDocument.open();
 			this.$iframe.contentDocument.write(this.page().html());

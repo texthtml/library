@@ -86,10 +86,10 @@ body > div {
 				width: 25%;
 				line-height: 3rem;
 				text-align: center;
+				font-size: 0.8em;
 				
 				a {
 					display: block;
-					text-align: center;
 				}
 			}
 		}
@@ -99,17 +99,61 @@ body > div {
 		left: 0%;
 		z-index: 0;
 		
-		.content a {
-			font-style: italic;
-			color: gray;
-		}
-		
-		li a * {
-			font-style: normal;
-			color: blacK;
-			
-			&.title {
-				font-weight: bold;
+		.content {
+			ul {
+				list-style: none;
+				padding: 0;
+				
+				li {
+					font-style: normal;
+					color: blacK;
+					padding: 0 1rem;
+					padding-bottom: 2.5rem;
+					position: relative;
+					font-style: italic;
+					color: gray;
+					cursor: pointer;
+					
+					.title {
+						font-weight: bold;
+						display: block;
+					}
+					
+					span {
+						font-style: normal;
+						color: black;
+					}
+					
+					button, a {
+						opacity: 0.3;
+						position: absolute;
+						bottom: 0;
+						line-height: 1rem;
+						margin-bottom: 0.5rem;
+						padding: 0.25rem;
+						border: 1px solid gray;
+						font-weight: bold;
+						background-color: #ffdddd;
+						border-color: #663333;
+						color: black;
+					}
+					
+					a {
+						right: 1rem;
+						background-color: #ddddff;
+						border-color: #333366;
+					}
+					
+					&:focus {
+						button, a {
+							opacity: 1;
+						}
+					}
+					
+					.search-content {
+						display: none;
+					}
+				}
 			}
 		}
 	}
@@ -147,7 +191,8 @@ body > div {
 	&.pane {
 		z-index: 1;
 		width: 100%;
-		padding-left: @panebackw;
+		left: -100%;
+		padding-right: @panebackw;
 		
 		& > a.back {
 			position: absolute;
@@ -156,9 +201,6 @@ body > div {
 			height: 100%;
 			background-color: rgba(0, 0, 0, 0.5);
 		}
-		
-		left: -100%;
-		padding-right: @panebackw;
 		
 		&.target {
 			left: 0%;
