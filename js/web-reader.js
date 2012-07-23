@@ -2,6 +2,34 @@
 window.WR = (function() {
 	"use strict";
 	
+	var Trigger = {
+		addEventListener: function($event_name, $callback) {
+			if(this.event_listeners === undefined) {
+				this.event_listeners = {};
+			}
+			
+			if(this.event_listeners[$event_name] === undefined) {
+				this.event_listeners[$event_name] = [];
+			}
+			
+			this.event_listeners[$event_name].push($callback);
+		}, 
+		
+		trigger: function($evt) {
+			if(this.event_listeners === undefined) {
+				return;
+			}
+			
+			if(this.event_listeners[$evt.type] === undefined) {
+				return;
+			}
+			
+			this.event_listeners[$evt.type].forEach(function($callback) {
+				$callback.call(this, $evt);
+			});
+		}
+	};
+
 	var 
 		rect = function($el) {
 			var $range = $el.ownerDocument.createRange();
@@ -14,11 +42,24 @@ window.WR = (function() {
 			}
 			
 			return window.sessionStorage;
-		};
-
-	var WR = function() {};
+		}, 
+		$ebook_handlers = {};
 	
-	WR.prototype = {
+	return {
+		register: function($mime, $handler, $name) {
+			$ebook_handlers[$mime] = {
+				factory: $handler, 
+				name   : $name
+			};
+		}, 
+		
+		handler: function($mime) {
+			return $ebook_handlers[$mime];
+		}, 
+		
+		addEventListener: Trigger.addEventListener, 
+		trigger: Trigger.trigger, 
+		
 		library: (function() {
 			
 			var 
@@ -58,28 +99,31 @@ window.WR = (function() {
 					storage().setItem('ebook.'+$identifier, $blob);
 					storage().setItem('ebooks', JSON.stringify($ebooks));
 					
-					var $event     = $.Event('changed');
-					$event.$ebooks = $ebooks;
-					$(this).trigger($event);
+					var $event     = new Event('changed');
+					$event.$ebooks = this.list(true);
+					this.trigger($event);
 					
-					var $event              = $.Event('stored');
+					var $event              = new Event('stored');
 					$event.$ebook           = $ebook;
 					$event.$already_existed = $existed;
-					$(this).trigger($event);
+					this.trigger($event);
 				};
 			
-			var Library = $.noop;
-			Library.prototype = {
+			var Library = {
+		
+				addEventListener: Trigger.addEventListener, 
+				trigger: Trigger.trigger, 
+				
 				set: function($file) {
 					var 
 						$ebook, 
-						$event = $.Event('inserting'), 
+						$event = new Event('inserting'), 
 						$inserted = function($ebook) {
-							var $event = $.Event('inserted');
+							var $event = new Event('inserted');
 							$event.$ebook = $ebook;
-							$(this).trigger($event);
+							this.trigger($event);
 						}.bind(this);
-					$(this).trigger($event);
+					this.trigger($event);
 
 					var $handler = WR.handler($file.type);
 
@@ -97,6 +141,7 @@ window.WR = (function() {
 						$reader.readAsBinaryString($file);
 					}
 				}, 
+				
 				del: function($identifier) {
 					var 
 						$ebooks     = ebooks();
@@ -104,14 +149,15 @@ window.WR = (function() {
 					delete $ebooks[$identifier];
 					storage().setItem('ebooks', JSON.stringify($ebooks));
 					
-					var $event    = $.Event('removed');
+					var $event    = new Event('removed');
 					$event.$ebook = $identifier;
-					$(this).trigger($event);
+					this.trigger($event);
 					
-					var $event     = $.Event('changed');
-					$event.$ebooks = $ebooks;
-					$(this).trigger($event);
+					var $event     = new Event('changed');
+					$event.$ebooks = this.list(true);
+					this.trigger($event);
 				}, 
+				
 				list: function($array) {
 					if($array !== true) {
 						return ebooks();
@@ -127,9 +173,11 @@ window.WR = (function() {
 					
 					return $res;
 				}, 
+				
 				exists: function($identifier) {
 					return ebooks()[$identifier] !== undefined;
 				}, 
+				
 				get: function($identifier) {
 					var 
 						$ebook = ebooks()[$identifier], 
@@ -138,10 +186,16 @@ window.WR = (function() {
 					if($handler !== undefined) {
 						return new $handler.factory(storage().getItem('ebook.'+$identifier));
 					}
+				}, 
+				
+				load: function() {
+					var $event     = new Event('loaded');
+					$event.$ebooks = this.list(true);
+					this.trigger($event);
 				}
 			};
 			
-			return new Library();
+			return Object.create(Library);
 		} ()), 
 		
 		open: function($target, $ebook) {
@@ -154,19 +208,20 @@ window.WR = (function() {
 				this.$href = null;
 				this.$ebook_id = $ebook;
 				
-				$event         = $.Event('opening');
+				$event         = new Event('opening');
 				$event.$ebook  = this.ebook();
-				$(this).trigger($event);
+				this.trigger($event);
 			}
 
 			this.goto($target);
 			
 			if($event !== undefined) {
-				$event         = $.Event('opened');
+				$event         = new Event('opened');
 				$event.$ebook  = this.$ebook;
-				$(this).trigger($event);
+				this.trigger($event);
 			}
 		}, 
+		
 		goto: function($target, $href, $hash, $delta) {
 			if($delta === undefined) {
 				$delta = 0;
@@ -179,11 +234,11 @@ window.WR = (function() {
 				}
 			}
 			
-			var $event     = $.Event('goingto');
+			var $event     = new Event('goingto');
 			$event.$href   = $href;
 			$event.$hash   = $hash;
 			
-			$(this).trigger($event);
+			this.trigger($event);
 			
 			if(this.$href !== $href) {
 				this.$href = $href;
@@ -198,35 +253,33 @@ window.WR = (function() {
 					$el;
 
 				if($matches === null) {
-					$el = $($hash, this.$iframe.contentDocument).get(0);
+					$el = this.$iframe.contentDocument.querySelector($hash);
 				}
 				else {
-					$el = $($matches[1], this.$iframe.contentDocument)
+					//~ TODO 
+					console.warn('what am I doing here?', $hash, $matches);
+					debugger;
+					$el = $(this.$iframe.contentDocument.querySelector($matches[1]))
 					.contents().filter(function() {
 						return this.nodeType === 3;
 					})[$matches[2]];
 				}
-					
-				var 
-					$r = rect($el), 
-					$offset = Math.floor($r.top-$r.height*$delta);
-				//~ console.log($hash, $el, $r, $offset);
-				$(this.$iframe.contentDocument).scrollTo(
-					'+='+$offset+'px', 
-					250
-				);
+				
+				this.$iframe.contentDocument.documentElement.scrollTop = $el.offsetTop + $delta;
 			}
 			
-			var $event   = $.Event('goneto');
+			var $event   = new Event('goneto');
 			$event.$href = this.$href;
 			$event.$page = this.$page;
 			$event.$hash = $hash;
 			
-			$(this).trigger($event);
+			this.trigger($event);
 		}, 
+		
 		href: function($href) {
 			return this.$href;
 		}, 
+		
 		page: function() {
 			if(this.$page === undefined) {
 				this.$page = this.ebook().page(this.$href);
@@ -234,45 +287,57 @@ window.WR = (function() {
 			
 			return this.$page;
 		}, 
+		
 		next: function() {
 			return this.page().next()
 		}, 
+		
 		prev: function() {
 			return this.page().prev()
 		}, 
+		
 		go_next: function() {
 			this.goto(this.next());
 		}, 
+		
 		go_prev: function() {
 			this.goto(this.prev());
 		}, 
+		
 		ebook: function() {
 			if(this.$ebook === undefined) {
 				this.$ebook = this.library.get(this.$ebook_id);
 			}
 			return this.$ebook;
 		}, 
+		
 		render_toc: function($target) {
-			return $(this.ebook().toc().content()).appendTo($($target).empty());
-		}, 	
+			$target.innerHTML = this.ebook().toc().content();
+			return $target;
+		}, 
+		
 		render: function($target) {
 			this.$iframe = document.createElement("iframe");
 			
-			$($target).empty().append(this.$iframe);
+			$target.innerHTML = '';
+			$target.appendChild(this.$iframe);
 			
 			this.$iframe.contentDocument.open();
 			this.$iframe.contentDocument.write(this.page().html());
 			this.$iframe.contentDocument.close();
 			
-			$(this.$iframe.contentDocument).on('scroll', this.save_position.bind(this));
+			this.$iframe.contentDocument.addEventListener(
+				'scroll', 
+				this.save_position.bind(this)
+			);
 			
-			var $event     = $.Event('rendered');
+			var $event     = new Event('rendered');
 			$event.$ebook  = this.$ebook;
 			$event.$href   = this.$href;
 			$event.$page   = this.$page;
 			$event.$iframe = this.$iframe;
 			
-			$(this).trigger($event);
+			this.trigger($event);
 		}, 	
 		
 		save_position: function() {
@@ -280,6 +345,9 @@ window.WR = (function() {
 				top_in_viewport = function($el) {
 					var $nodes;
 					
+					//~ TODO
+					console.warn('see #25');
+					return;
 					do {
 						$nodes = $el.contents().filter(function() {
 							var $rect = rect(this);
@@ -307,9 +375,13 @@ window.WR = (function() {
 					return $el;
 				}, 
 				_save_position = function() {
+					//~ TODO
+					console.warn('see #25');
+					return;
+					
 					var 
 						$iframe = this.$iframe.contentDocument,
-						$el = top_in_viewport($('body', $iframe)), 
+						$el = top_in_viewport($iframe.body), 
 						$rect = rect($el.get(0)), 
 						$path = $el.getPath();
 					if($path === undefined) {
@@ -331,22 +403,8 @@ window.WR = (function() {
 			};
 		} ()
 	};
-
-	var $ebook_handlers = {};
-
-	WR.register = function($mime, $handler, $name) {
-		$ebook_handlers[$mime] = {
-			factory: $handler, 
-			name   : $name
-		};
-	}
-
-	WR.handler = function($mime) {
-		return $ebook_handlers[$mime];
-	}
-
-	return WR;
 } ());
+
 
 /*
 EBook = $.noop;
@@ -358,4 +416,34 @@ EBook.prototype = {
 	
 	blob      : $.noop
 }
+*/
+
+
+/*
+jQuery.fn.getPath = function() {
+	if(this.length != 1) throw 'Requires one element.';
+	
+	var path, node = this;
+	while(node.length) {
+		var realNode = node[0], name = realNode.localName;
+		if(!name) break;
+		
+		name = name.toLowerCase();
+		if(realNode.id) {
+			// As soon as an id is found, there's no need to specify more.
+			return name + '#' + realNode.id  + (path ? '>' + path : '');
+		}
+		else if(realNode.className) {
+			name += '.' + realNode.className.split(/\s+/).join('.');
+		}
+		
+		var parent = node.parent(), siblings = parent.children(name);
+		if(siblings.length > 1) name += ':eq(' + siblings.index(node) + ')';
+		path = name + (path ? '>' + path : '');
+		
+		node = parent;
+	}
+	
+	return path;
+};
 */

@@ -67,7 +67,7 @@ EPUB.tools = {
 	 * @arg $default_callback callback to use if $n === false or callback argument is undefined
 	 */
 	callback: function($function, $default_callback, $n) {
-		if(typeof $n === 'undefined') {
+		if($n === undefined) {
 			$n = 0;
 		}
 		return function() {
@@ -78,7 +78,7 @@ EPUB.tools = {
 			if($n !== false) {
 				$callback = $args.splice($n, 1).pop();
 			}
-			if(typeof $callback === 'undefined') {
+			if($callback === undefined) {
 				$callback = $default_callback;
 			}
 			else if($callback === false) {
@@ -101,7 +101,7 @@ EPUB.prototype = (function() {
 		}, 
 		
 		files: function() {
-			if(typeof this.$files === 'undefined') {
+			if(this.$files === undefined) {
 				var $unzipper = new JSUnzip(this.blob());
 				
 				if ($unzipper.isZipFile()) {
@@ -109,10 +109,10 @@ EPUB.prototype = (function() {
 					
 					var $files = {};
 					var set_file = function($path, $file, $relroot, $relpath) {
-						if(typeof $relpath === 'undefined') {
+						if($relpath === undefined) {
 							$relpath = $path;
 						}
-						if(typeof $relroot === 'undefined') {
+						if($relroot === undefined) {
 							$relroot = $files;
 						}
 						var 
@@ -124,7 +124,7 @@ EPUB.prototype = (function() {
 							$relroot[$base] = $file;
 						}
 						else {
-							if(typeof $relroot[$base] === 'undefined') {
+							if($relroot[$base] === undefined) {
 								$relroot[$base] = {};
 							}
 							if($end !== '') {
@@ -133,7 +133,7 @@ EPUB.prototype = (function() {
 						}
 					}
 					
-					$($unzipper.entries).each(function($i, $entry) {
+					$unzipper.entries.forEach(function($entry) {
 						set_file(
 							$entry.fileName, 
 							new EPUB.File(this, $entry)
@@ -148,10 +148,10 @@ EPUB.prototype = (function() {
 		},
 		
 		_file: function($path, $relroot, $relpath) {
-			if(typeof $relpath === 'undefined') {
+			if($relpath === undefined) {
 				$relpath = $path;
 			}
-			if(typeof $relroot === 'undefined') {
+			if($relroot === undefined) {
 				$relroot = this.files();
 			}
 			var 
@@ -190,17 +190,18 @@ EPUB.prototype = (function() {
 		
 		rootfiles: function($media_type) {
 			var $selector = 'rootfile';
-			if(typeof $media_type !== 'undefined') {
+			if($media_type !== undefined) {
 				$selector += '[media-type="'+$media_type+'"]';
 			}
-			return $($selector, this.container());
+			
+			return this.container().querySelectorAll($selector);
 		}, 
 		
 		rootfile_path: function($media_type, $n) {
-			if(typeof $n === 'undefined') {
+			if($n === undefined) {
 				$n = 0;
 			}
-			return $(this.rootfiles($media_type).get($n)).attr('full-path');
+			return this.rootfiles($media_type)[$n].getAttribute('full-path');
 		}, 
 		
 		rootfile: function($media_type, $n) {
@@ -238,7 +239,7 @@ EPUB.prototype = (function() {
 EPUB.File.prototype = (function() {
 	return {
 		content: function() {
-			if(typeof this.$content === 'undefined') {
+			if(this.$content === undefined) {
 				this.$content = this.$entry.data;
 				
 				if(this.$entry.compressionMethod === 8) {
@@ -258,7 +259,7 @@ EPUB.File.prototype = (function() {
 EPUB.RootFile.prototype = (function() {
 	var prototype = {
 		doc: function() {
-			if(typeof this.$doc === 'undefined') {
+			if(this.$doc === undefined) {
 				this.$doc = EPUB.tools.parseXMLfile(this.$file, true);
 			}
 			
@@ -266,30 +267,44 @@ EPUB.RootFile.prototype = (function() {
 		}, 
 		
 		$: function($selector) {
-			return $($selector.replace(':', '\\\\\\:'), this.doc())
+			window.$d = this.doc();
+			debugger;
+			console.warn('deprecated');
+			$selector = $selector.replace(/.*:/, '');
+			return this.doc().querySelectorAll($selector);
+		}, 
+		
+		$One: function($selector) {
+			$selector = $selector.replace(/.*:/, '');
+			return this.doc().querySelector($selector);
+		}, 
+		
+		$All: function($selector) {
+			$selector = $selector.replace(/.*:/, '');
+			return this.doc().querySelectorAll($selector);
 		}, 
 		
 		version: function() {
-			return this.$('package').attr('version');
+			return this.$One('package').getAttribute('version');
 		}, 
 		
 		item: function($id) {
-			var $item = $(this.$('manifest #'+$id));
+			var $item = this.$One('manifest [id='+$id+']');
 			return new EPUB.Item($item, this);
 		}, 
 		
 		item_by_href: function($href) {
-			var $item = this.$('manifest item[href="'+$href+'"]');
-			return this.item($($item).attr('id'));
+			var $item = this.$One('manifest item[href="'+$href+'"]');
+			return this.item($item.getAttribute('id'));
 		}, 
 		
 		items: function($media_type) {
-			return this.$('manifest item[media-type="'+$media_type+'"]');
+			return this.$All('manifest item[media-type="'+$media_type+'"]');
 		}, 
 		
 		toc: function() {
-			var $toc = this.$('spine').attr('toc');
-			if(typeof $toc !== 'undefined') {
+			var $toc = this.$One('spine').getAttribute('toc');
+			if($toc !== undefined) {
 				$toc = this.item($toc);
 			}
 			
@@ -297,12 +312,16 @@ EPUB.RootFile.prototype = (function() {
 		}, 
 		
 		spine: function($spine) {
-			if(typeof $spine === 'undefined') {
+			if($spine === undefined) {
 				$spine = 0;
 			}
 			
 			if(typeof $spine === 'number') {
-				return this.item($(this.$('spine itemref').filter(':not([linear=no])').get($spine)).attr('idref'));
+				return this.item(
+					Array.prototype.filter.call(this.$All('spine itemref'), function($el) {
+						return $el.getAttribute('linear') !== 'no';
+					})[$spine].getAttribute('idref')
+				);
 			}
 			
 			return this.item_by_href($spine);
@@ -315,11 +334,10 @@ EPUB.RootFile.prototype = (function() {
 	 * $nodes nodes list
 	 */
 	var firstNodeText = function($nodes) {
-		var $node = $nodes.get(0)
-		if(typeof $node === 'undefined') {
-			return $node;
+		if($nodes.length === 0) {
+			return undefined;
 		}
-		return {value: $($nodes).text().trim(), ns: 'dc'};
+		return {value: $nodes[0].textContent.trim(), ns: 'dc'};
 	};
 	
 	/*
@@ -327,18 +345,18 @@ EPUB.RootFile.prototype = (function() {
 	 * $nodes nodes list
 	 */
 	var nodesText = function($nodes) {
-		return $nodes.map(function($i, $node) {
-			return  {value: $($node).text().trim(), ns: 'dc'};
-		}).toArray();
+		return Array.prototype.map.call($nodes, function($node) {
+			return  {value: $node.textContent.trim(), ns: 'dc'};
+		});
 	};
 	
 	var $metadata = {
 		identifier:  [firstNodeText, 1, function($id) {
-			if(typeof $id === 'undefined') {
-				$id = this.$('package').attr('unique-identifier');
+			if($id === undefined) {
+				$id = this.$One('package').getAttribute('unique-identifier');
 			}
 			
-			return this.$('metadata dc:identifier').filter('#'+$id);
+			return this.$All('metadata dc:identifier[id='+$id+']');
 		}], 
 		title:       [firstNodeText], 
 		language:    [firstNodeText], 
@@ -363,10 +381,11 @@ EPUB.RootFile.prototype = (function() {
 			$default_callback = $metadata[$val][0],
 			$n                = $metadata[$val][1],
 			$f                = $metadata[$val][2];
+		
 		prototype[$val] = (function($name, $default_callback, $n, $f) {
-			if(typeof $f === 'undefined') {
+			if($f === undefined) {
 				$f = function() {
-					return this.$('metadata dc:'+$name);
+					return this.$All('metadata dc:'+$name);
 				}
 			}
 			
@@ -375,11 +394,13 @@ EPUB.RootFile.prototype = (function() {
 	}
 	
 	prototype.metadata = function($key) {
-		if(typeof this.$metadata === 'undefined') {
+		if(this.$metadata === undefined) {
 			this.$metadata = {};
-			this.$('metadata meta').filter(':not([refines])').each(function($i, $meta) {
-				this.$metadata[$($meta).attr('name')] = {value: $($meta).attr('content')};
-			}.bind(this));
+			Array.prototype.filter.call(this.$All('metadata meta'), function($el) {
+				return true;
+			}).forEach(function($meta) {
+				this.$metadata[$meta.getAttribute('name')] = {value: $meta.getAttribute('content')};
+			}, this);
 			
 			for(var $nsname in this.$metadata) {
 				var $name = $nsname.match(/([^:]+):(.*)/);
@@ -398,11 +419,11 @@ EPUB.RootFile.prototype = (function() {
 			}
 		}
 		
-		if(typeof $key === 'undefined') {
+		if($key === undefined) {
 			return this.$metadata;
 		}
 		
-		if(typeof this.$metadata[$key] !== 'undefined') {
+		if(this.$metadata[$key] !== undefined) {
 			return this.$metadata[$key];
 		}
 		
@@ -420,32 +441,31 @@ EPUB.Item.prototype = (function() {
 	};
 	return {
 		file: function() {
-			if(typeof this.$file === 'undefined') {
-				var $path = this.$rootfile.$file.$dir+'/'+this.$item.attr('href');
+			if(this.$file === undefined) {
+				var $path = this.$rootfile.$file.$dir+'/'+this.$item.getAttribute('href');
 				this.$file = this.$epub.file($path, false);
 			}
 			return this.$file;
 		}, 
 		
 		media_type: function() {
-			return this.$item.attr('media-type');
+			return this.$item.getAttribute('media-type');
 		}, 
 		
 		content: function() {
-			if(typeof this.$content === 'undefined') {
+			if(this.$content === undefined) {
 				this.$content = this.file().content();
 				var 
 					$media_type = this.media_type(), 
 					$callback = $media_type_callback[$media_type];
 				
-				if(typeof $callback !== 'undefined') {
+				if($callback !== undefined) {
 
 					this.$content = $callback(this.$content);
 				}
 
 				if($media_type === 'text/css') {
 					this.$content = this.$content.replace(/url\((.*?)\)/gi, function($_, $url) {
-						console.log('css', $url);
 						if (!/^data/i.test($url)) {
 							var $item = this.$rootfile.item_by_href($url);
 							return "url(" + $item.dataUri + ")";
@@ -467,39 +487,39 @@ EPUB.Item.prototype = (function() {
 				var $media_type = this.media_type();
 				
 				if($media_type === 'application/xhtml+xml') {
-					
-					$('img', this.$doc).each(function($i, $img) {
-						var $src = $($img).attr('src');
+					Array.prototype.forEach.call(this.$doc.querySelectorAll('img'), function($img) {
+						var $src = $img.getAttribute('src');
 						if(!/^data/.test($src)) {
 							var 
 								$img_item = this.$rootfile.item_by_href($src), 
 								$data = escape($img_item.content());
 							
-							$($img).attr('src', $img_item.dataURI());
+							$img.setAttribute('src', $img_item.dataURI());
 						}
-					}.bind(this));
+					}, this);
 					
-					$('image', this.$doc).each(function($i, $img) {
-						var $src = $($img).attr('xlink:href');
+					Array.prototype.forEach.call(this.$doc.querySelectorAll('image'), function($i, $img) {
+						var $src = $img.getAttribute('xlink:href');
 						if(!/^data/.test($src)) {
 							var 
 								$img_item = this.$rootfile.item_by_href($src), 
 								$data = escape($img_item.content());
 							
-							$($img).attr('xlink:href', $img_item.dataURI());
+							$img.setAttribute('xlink:href', $img_item.dataURI());
 						}
-					}.bind(this));
+					}, this);
 					
-					$('link[rel=stylesheet]', this.$doc).each(function($i, $link) {
+					Array.prototype.forEach.call(this.$doc.querySelectorAll('link[rel=stylesheet]'), function($link) {
 						var 
-							$style = $('<style scoped="scoped"/>'), 
-							$href = $($link).attr('href'), 
+							$style = document.createElement('style'), 
+							$href = $link.getAttribute('href'), 
 							$link_item = this.$rootfile.item_by_href($href);
 						
-						$style.text($link_item.content());
+						$style.textContent = $link_item.content();
 						
-						$($link).replaceWith($style);
-					}.bind(this));
+						$link.parentNode.insertBefore($style, $link);
+						$link.parentNode.removeChild($link);
+					}, this);
 				}
 			}
 			
@@ -507,11 +527,11 @@ EPUB.Item.prototype = (function() {
 		}, 
 		
 		href: function() {
-			return $(this.$item).attr('href');
+			return this.$item.getAttribute('href');
 		}, 
 		
 		html: function() {
-			if(typeof this.$html === 'undefined') {
+			if(this.$html === undefined) {
 				this.$html = new XMLSerializer().serializeToString(this.doc());
 			}
 			
@@ -519,20 +539,24 @@ EPUB.Item.prototype = (function() {
 		}, 
 		
 		itemref: function() {
-			return this.$rootfile.$('itemref[idref="'+$(this.$item).attr('id')+'"]');
+			return this.$rootfile.$One('itemref[idref="'+this.$item.getAttribute('id')+'"]');
 		}, 
 		
 		next: function() {
-			var $id = $(this.itemref()).next().attr('idref');
-			if(typeof $id !== 'undefined') {
-				return this.$rootfile.$('#'+$id).attr('href');
+			var 
+				$next = this.itemref().nextElementSibling, 
+				$id = $next === null ? undefined : $next.getAttribute('idref');
+			if($id  !== undefined) {
+				return this.$rootfile.$One('[id='+$id+']').getAttribute('href');
 			}
 		}, 
 		
 		prev: function() {
-			var $id = $(this.itemref()).prev().attr('idref');
-			if(typeof $id !== 'undefined') {
-				return this.$rootfile.$('#'+$id).attr('href');
+			var 
+				$prev = this.itemref().previousElementSibling, 
+				$id = $next === null ? undefined : $prev.getAttribute('idref');
+			if($id !== undefined) {
+				return this.$rootfile.$One('#'+$id).attr('href');
 			}
 		}
 	};
