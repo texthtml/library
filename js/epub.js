@@ -498,7 +498,7 @@ EPUB.Item.prototype = (function() {
 						}
 					}, this);
 					
-					Array.prototype.forEach.call(this.$doc.querySelectorAll('image'), function($i, $img) {
+					Array.prototype.forEach.call(this.$doc.querySelectorAll('image'), function($img) {
 						var $src = $img.getAttribute('xlink:href');
 						if(!/^data/.test($src)) {
 							var 
