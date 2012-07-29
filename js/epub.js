@@ -436,8 +436,20 @@ EPUB.RootFile.prototype = (function() {
 
 EPUB.Item.prototype = (function() {
 	var $media_type_callback = {
-		'application/xhtml+xml':    EPUB.tools.decode_utf8, 
-		'application/x-dtbncx+xml': EPUB.tools.decode_utf8
+		'application/xhtml+xml':    function() {
+			return EPUB.tools.decode_utf8(this.$content);
+		}, 
+		'application/x-dtbncx+xml': function() {
+			return EPUB.tools.decode_utf8(this.$content);
+		}, 
+		'text/css':                 function() {
+			return this.$content.replace(/url\((.*?)\)/gi, function($_, $url) {
+				if (!/^data/i.test($url)) {
+					var $item = this.$rootfile.item_by_href($url);
+					return "url(" + $item.dataUri + ")";
+				}
+			}.bind(this));
+		}
 	};
 	return {
 		file: function() {
@@ -460,17 +472,7 @@ EPUB.Item.prototype = (function() {
 					$callback = $media_type_callback[$media_type];
 				
 				if($callback !== undefined) {
-
-					this.$content = $callback(this.$content);
-				}
-
-				if($media_type === 'text/css') {
-					this.$content = this.$content.replace(/url\((.*?)\)/gi, function($_, $url) {
-						if (!/^data/i.test($url)) {
-							var $item = this.$rootfile.item_by_href($url);
-							return "url(" + $item.dataUri + ")";
-						}
-					}.bind(this));
+					this.$content = $callback.call(this);
 				}
 			}
 			return this.$content;
