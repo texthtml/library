@@ -311,8 +311,83 @@ window.WR = (function() {
 			return this.$ebook;
 		}, 
 		
+		render_toc_navmap: function($navmap) {
+			var $ol = document.createElement('ol');
+			
+			for(var $i = 0; $i < $navmap.length; $i++) {
+				var 
+					$li = document.createElement('li'), 
+					$el = $navmap[$i];
+				
+				switch($el.nodeName) {
+					case 'navPoint':
+						var 
+							$submap = false, 
+							$content, 
+							$label;
+
+						for(var $j = 0; $j < $el.childNodes.length; $j++) {
+							switch($el.childNodes[$j].nodeName) {
+								case 'navLabel':
+									$label = $el.childNodes[$j].textContent;
+									break;
+								case 'content':
+									$content = $el.childNodes[$j].getAttribute('src');
+									break;
+								case 'navPoint':
+									$submap = true;
+								default:
+									console.log($el.childNodes[$j]);
+							}
+						}
+						
+						var $a = document.createElement('a');
+						$a.textContent = $label;
+						$a.href = $content;
+						$a.href = '#todo'; // @TODO
+						console.warn($content);
+						
+						$li.appendChild($a);
+						
+						if($submap) {
+							$li.appendChild(this.render_toc_navmap($el));
+						}
+						
+						$ol.appendChild($li);
+						
+						break;
+					default:
+						console.log($el);
+				}
+			}
+			
+			return $ol;
+		}, 
+
 		render_toc: function($target) {
-			$target.innerHTML = this.ebook().toc().content();
+			var $toc = $target.innerHTML = this.ebook().toc();
+
+			switch($toc.media_type()) {
+				case 'application/x-dtbncx+xml':
+					while($target.firstChild !== null) {
+						$target.removeChild($target.firstChild);
+					}
+					
+					var 
+						$xml = new DOMParser().parseFromString($toc.content(), "text/xml").documentElement, 
+						$title = document.createElement('h1'), 
+						$navmap = this.render_toc_navmap($xml.querySelector('navMap').childNodes);
+					
+					$title.textContent = $xml.querySelector('docTitle').textContent;
+					
+					$target.appendChild($title);
+					$target.appendChild($navmap);
+
+					break;
+				default:
+					$target.innerHTML = $toc.content();
+			}
+			
 			return $target;
 		}, 
 		
