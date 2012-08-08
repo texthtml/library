@@ -2,7 +2,7 @@
 
 
 function EPUB($blob) {
-	this.$blob = $blob;
+	return Object.create(EPUB.prototype, {blob: {value: $blob}});
 }
 
 EPUB.File = function($epub, $entry) {
@@ -96,13 +96,9 @@ EPUB.tools = {
 
 EPUB.prototype = (function() {
 	return {
-		blob: function() {
-			return this.$blob;
-		}, 
-		
 		files: function() {
 			if(this.$files === undefined) {
-				var $unzipper = new JSUnzip(this.blob());
+				var $unzipper = new JSUnzip(this.blob);
 				
 				if ($unzipper.isZipFile()) {
 					$unzipper.readEntries();

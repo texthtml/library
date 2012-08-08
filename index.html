@@ -113,7 +113,9 @@
 				<h1>EBook</h1>
 			</header>
 			
-			<div class="content"></div>
+			<div class="content">
+				<iframe></iframe>
+			</div>
 			
 			<footer>
 				<nav>
@@ -162,23 +164,23 @@
 		<script src="js/index.js"></script>
 		
 		<script id="library-item" type="text/x-jsrender">
-			<li id="{{:identifier}}"  class="ebook {{:type}}" xml:lang="{{:language.value}}" tabindex="{{:#index+1}}">
+			<li id="{{:identifier.value}}"  class="ebook {{:type}}" xml:lang="{{:language.value}}" tabindex="{{:#index+1}}">
 				<div class="search-content">
 					{{:title.value.toLowerCase()}}
-					{{for creators}}
+					{{for creator}}
 						{{:value.toLowerCase()}}
 					{{/for}}
-					{{if metadata.series}}{{:metadata.series.value.toLowerCase()}}{{/if}}
-					{{if metadata.series_index}}{{:metadata.series_index.value}}{{/if}}
+					{{if series}}{{:series.value.toLowerCase()}}{{/if}}
+					{{if series_index}}{{:series_index.value}}{{/if}}
 				</div>
 				<button name="delete">delete</button>
-				{{if metadata.series}}<span class="series">{{:metadata.series.value}} − </span>{{/if}}
-				{{if metadata.series_index}}<span class="series_index">{{:metadata.series_index.value}} − </span>{{/if}}
+				{{if series}}<span class="series">{{:series.value}} − </span>{{/if}}
+				{{if series_index}}<span class="series_index">{{:series_index.value}} − </span>{{/if}}
 				<span class="title">{{:title.value}}</span>
 				by
-				{{for creators}}{{if #index > 0}}, {{/if}}
+				{{for creator}}{{if #index > 0}}, {{/if}}
 				<span class="creator">{{:value}}</span>{{/for}}
-				<a href="#ebook/{{:identifier}}">read</a>
+				<a href="#ebook/{{:identifier.value.replace('@', '@@', 'g')}}">read</a>
 			</li>
 		</script>
 	</body>
