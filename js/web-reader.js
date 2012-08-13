@@ -1,70 +1,31 @@
 (function($scope) {
 	"use strict";
-	
-	var Trigger = {
-		addEventListener: function($event_name, $callback) {
-			if(this.event_listeners === undefined) {
-				this.event_listeners = {};
-			}
-			
-			if(this.event_listeners[$event_name] === undefined) {
-				this.event_listeners[$event_name] = [];
-			}
-			
-			this.event_listeners[$event_name].push($callback);
-		}, 
-		
-		trigger: function($event, $data) {
-			if(typeof $event === 'string') {
-				$event = new Event($event);
-			}
-			
-			if($data !== undefined) {
-				for(var $i in $data) {
-					$event[$i] = $data[$i];
-				}
-			}
-			
-			console.info(this, $event);
-			
-			if(this.event_listeners === undefined) {
-				return;
-			}
-			
-			if(this.event_listeners[$event.type] === undefined) {
-				return;
-			}
-			
-			this.event_listeners[$event.type].forEach(function($callback) {
-				$callback.call(this, $event);
-			}.bind(this));
-		}
-	};
-	
 		
 	var Library = (function() {
 		
 		var 
 			$db, 
-			store = function($ebook, $type) {
+			$ebook, 
+			$ebook_identifier, 
+			store = function($identifier, $type, $metadata, $blob, $ebook) {
 				var 
 					$transaction = $db.transaction(['metadata', 'files'], 'readwrite'), 
-					$identifier  = $ebook.identifier().value, 
-					$blob        = $ebook.blob, 
-					$metadata    = $ebook.metadata(), 
 					$ebooks      = [];
+				
+				$metadata.identifier.value = $identifier;
+				$metadata.type = $type;
 				
 				$transaction.addEventListener('complete', function($event) {
 					this.trigger('added', {
-						$metadata: $metadata
+						$identifier: $identifier, 
+						$metadata  : $metadata, 
+						$ebook     : $ebook 
 					});
 					
 					this.trigger('changed', {
 						$ebooks: $ebooks
 					});
 				}.bind(this));
-				
-				$metadata.type = $type;
 				
 				$transaction.objectStore('metadata').put($metadata, $identifier);
 				$transaction.objectStore('files').put($blob, $identifier);
@@ -145,47 +106,56 @@
 			add: function($file) {
 				this.trigger('adding');
 				
-				var $handler = WR.handler($file.type);
+				var $handler = $scope.WR.handler($file.type);
 				
 				if($handler !== undefined) {
-					var $reader = new FileReader();
+					var $ebook = $handler.factory($file);
 					
-					$reader.onloadend = function($e) {
-						var $ebook = $handler.factory($e.target.result);
-						store.call(this, $ebook, $file.type);
-					}.bind(this);
-					
-					$reader.readAsBinaryString($file);
+					$ebook.identifier(function($identifier) {
+						$ebook.metadata(function($metadata) {
+							store.call(this, $identifier, $file.type, $metadata, $file, $ebook);
+						}.bind(this));
+					}.bind(this));
+				}
+				else {
+					console.error($file.type, 'not supported');
 				}
 			}, 
 			
 			load: function($identifier, $callback) {
-				var 
-					$metadata, 
-					$blob, 
-					complete = function() {
-						if($metadata !== undefined && $blob !== undefined) {
-							var 
-								$handler = WR.handler($metadata.type);
-							
-							if($handler !== undefined) {
-								$callback($handler.factory($blob));
+				if($ebook_identifier === $identifier) {
+					$callback($ebook);
+				}
+				else {
+					var 
+						$metadata, 
+						$blob, 
+						complete = function() {
+							if($metadata !== undefined && $blob !== undefined) {
+								var 
+									$handler = WR.handler($metadata.type);
+								
+								if($handler !== undefined) {
+									$ebook_identifier = $identifier;
+									$ebook = $handler.factory($blob);
+									$callback($ebook);
+								}
 							}
-						}
-					};
-				
-				window.$db = $db;
-				
-				var $transaction = $db.transaction(['metadata', 'files'], 'readonly');
-				$transaction.objectStore('metadata').get($identifier).addEventListener('success', function($event) {
-					$metadata = $event.target.result;
-					complete();
-				});
-				$transaction.objectStore('files').get($identifier).addEventListener('success', function($event) {
-					$blob = $event.target.result;
-					complete();
-				});
-			},
+						};
+					
+					window.$db = $db;
+					
+					var $transaction = $db.transaction(['metadata', 'files'], 'readonly');
+					$transaction.objectStore('metadata').get($identifier).addEventListener('success', function($event) {
+						$metadata = $event.target.result;
+						complete();
+					});
+					$transaction.objectStore('files').get($identifier).addEventListener('success', function($event) {
+						$blob = $event.target.result;
+						complete();
+					});
+				}
+			}, 
 			
 			addEventListener: Trigger.addEventListener, 
 			trigger: Trigger.trigger
@@ -249,8 +219,6 @@
 			addEventListener: Trigger.addEventListener, 
 			trigger: Trigger.trigger
 		};
-		
-		return WR;
 	} ());
 	
 }) (window);

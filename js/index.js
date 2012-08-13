@@ -81,7 +81,18 @@ document.addEventListener('DOMContentLoaded', function() {
 				}) ();
 				
 				[$ebook, $ebook_spine, $ebook_hash] = split_ebook_hash($ebook);
-				$wr.open($ebook, $ebook_spine, $ebook_hash);
+				$wr.library().load($ebook, function($ebook) {
+					$ebook.spine($ebook_spine, function($spine) {
+						var 
+							$iframe = $ebook_el.querySelector('iframe');
+						
+						$iframe.contentDocument.open();
+						$iframe.contentDocument.write($spine);
+						$iframe.contentDocument.close();
+						
+						console.log($spine);
+					});
+				});
 				
 				$hash = 'ebook';
 			}
@@ -102,22 +113,28 @@ document.addEventListener('DOMContentLoaded', function() {
 			var 
 				$s1 = 
 					$e1.creator.map(function($i, $e) {return $e.value}).sort().join(' ')+' '+
-					($e1.series?$e1.series.value:'')+' '+
+					($e1.series ? $e1.series.value : '')+' '+
 					($e1.series_index?$e1.series_index.value:'')+' '+
-					$e1.title.value;
-			var 
+					$e1.title.value, 
 				$s2 = 
 					$e2.creator.map(function($i, $e) {return $e.value}).sort().join(' ')+' '+
-					($e2.series?$e2.series.value:'')+' '+
+					($e2.series ? $e2.series.value : '')+' '+
 					($e2.series_index?$e2.series_index.value:'')+' '+
 					$e2.title.value;
 			
 			return $s1.localeCompare($s2);
+		}).map(function($ebook) {
+			return $ebook;
 		});
 		
 		$filter_el.value = '';
 		
 		document.getElementById('library-list').innerHTML = jsviews.render.libraryItem($ebooks);
+		
+		if(render_ebooks.$focus !== undefined) {
+			document.getElementById(render_ebooks.$focus).focus();
+			delete render_ebooks.$focus;
+		}
 	};
 	
 	$wr.library().addEventListener('changed', function($event) {
@@ -126,16 +143,18 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	$wr.library().addEventListener('added', function($event) {
 		window.location.hash = 'library';
+		render_ebooks.$focus = $event.$identifier;
 	});
 	
 	$wr.addEventListener('open', function($event) {
-		var 
-			$html = $event.$ebook.page($event.$spine).html(), 
-			$iframe = $ebook_el.querySelector('iframe');
-		
-		$iframe.contentDocument.open();
-		$iframe.contentDocument.write($html);
-		$iframe.contentDocument.close();
+		console.log('open', $event.$ebook);
+		//~ var 
+			//~ $html = $event.$ebook.page($event.$spine).html(), 
+			//~ $iframe = $ebook_el.querySelector('iframe');
+		//~ 
+		//~ $iframe.contentDocument.open();
+		//~ $iframe.contentDocument.write($html);
+		//~ $iframe.contentDocument.close();
 	});
 	
 	$library_el.addEventListener('click', function($evt) {
