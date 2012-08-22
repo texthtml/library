@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		$filter_el  = $library_el.querySelector('input[name=filter]'), 
 		$ebook_el   = document.getElementById('ebook'), 
 		$toc_el     = document.getElementById('toc'), 
-		$current_ebook;
+		$iframe_el  = $ebook_el.querySelector('iframe');
 	
 	Array.prototype.forEach.call(document.querySelectorAll('div[id]'), function($el) {
 		$el.id = 'x-' + $el.id;
@@ -29,6 +29,39 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	var $wr = Object.create(WR);
 	window.$wr = $wr;
+				
+	var split_ebook_hash = (function() {
+		var split_escape = function($str, $sep, $esc) {
+			var $results = [];
+			var $current = '';
+			var $i = 0;
+			
+			while($str[$i] !== undefined) {
+				var $c = $str[$i];
+				if($c === $sep) {
+					$results.push($current);
+					$current = '';
+				}
+				else {
+					if($c === $esc) {
+						$c = $str[++$i];
+					}
+					
+					$current += $c;
+				}
+				
+				$i++;
+			}
+			
+			$results.push($current);
+			
+			return $results;
+		};
+		
+		return function($str) {
+			return split_escape($str, '@', '\\');
+		};
+	}) ();
 	
 	var hash_change = function() {
 		if(window === window.top) {
@@ -36,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				$hash = window.location.hash.substr(1), 
 				$pos = $hash.search('/'), 
 				$prefix = $hash.substr(0, $pos), 
-				$ebook = ($pos === -1) ? undefined : $hash.substr($pos + 1), 
+				$ebook_id = ($pos === -1) ? undefined : $hash.substr($pos + 1), 
 				$ebook_spine, 
 				$ebook_hash;
 			
@@ -44,53 +77,57 @@ document.addEventListener('DOMContentLoaded', function() {
 				$el.classList.remove('target');
 			});
 			
-			if($ebook !== undefined) {
+			if($ebook_id !== undefined) {
 				var $ebook_ = $ebook_spine = $ebook_hash = '';
 				
-				var split_ebook_hash = (function() {
-					var split_escape = function($str, $sep, $esc) {
-						var $results = [];
-						var $current = '';
-						var $i = 0;
+				[$ebook_id, $ebook_spine, $ebook_hash] = split_ebook_hash($ebook_id);
+				
+				$iframe_el.contentDocument.open();
+				$iframe_el.contentDocument.write('loading ebook…');
+				$iframe_el.contentDocument.close();
+				
+				Array.prototype.forEach.call($ebook_el.querySelectorAll('nav a[data-prefix]'), function($el) {
+					$el.href = '#' + $el.dataset.prefix + '/' + $ebook_id;
+				});
+				
+				if($ebook_spine !== undefined) {
+					$ebook_spine = parseInt($ebook_spine);
+				}
+				
+				$wr.library().load($ebook_id, function($ebook) {
+					$ebook.spine($ebook_spine, function($html, $spine) {
+						var 
+							$link;
 						
-						while($str[$i] !== undefined) {
-							var $c = $str[$i];
-							if($c === $sep) {
-								$results.push($current);
-								$current = '';
+						$iframe_el.contentDocument.open();
+						$iframe_el.contentDocument.write($html);
+						$iframe_el.contentDocument.close();
+						
+						$iframe_el.contentDocument.addEventListener('click', function($event) {
+							if($event.target.nodeName === 'a') {
+								$event.preventDefault();
+								console.log($event);
 							}
-							else {
-								if($c === $esc) {
-									$c = $str[++$i];
-								}
-								
-								$current += $c;
-							}
+						});
+						
+						if($ebook_hash !== undefined) {
+							var 
+								$el = $iframe_el.contentDocument.querySelector($ebook_hash), 
+								$top = $el === null ? 0 : $el.getClientRects()[0].top;
 							
-							$i++;
+							console.log($top);
+							$iframe_el.contentWindow.scrollTo(0, $top);
 						}
 						
-						$results.push($current);
+						$link = $iframe_el.contentDocument.createElement('a');
+						$link.textContent = 'next';
+						$link.target = '_top';
+						if($ebook_spine === undefined) {
+							$ebook_spine = 0;
+						}
+						$link.href = '#ebook/' + $ebook_id.replace('@', '\\@') + '@' + ($ebook_spine + 1);
 						
-						return $results;
-					};
-					
-					return function($str) {
-						return split_escape($str, '@', '\\');
-					};
-				}) ();
-				
-				[$ebook, $ebook_spine, $ebook_hash] = split_ebook_hash($ebook);
-				$wr.library().load($ebook, function($ebook) {
-					$ebook.spine($ebook_spine, function($spine) {
-						var 
-							$iframe = $ebook_el.querySelector('iframe');
-						
-						$iframe.contentDocument.open();
-						$iframe.contentDocument.write($spine);
-						$iframe.contentDocument.close();
-						
-						console.log($spine);
+						$iframe_el.contentDocument.body.appendChild($link);
 					});
 				});
 				
@@ -144,17 +181,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	$wr.library().addEventListener('added', function($event) {
 		window.location.hash = 'library';
 		render_ebooks.$focus = $event.$identifier;
-	});
-	
-	$wr.addEventListener('open', function($event) {
-		console.log('open', $event.$ebook);
-		//~ var 
-			//~ $html = $event.$ebook.page($event.$spine).html(), 
-			//~ $iframe = $ebook_el.querySelector('iframe');
-		//~ 
-		//~ $iframe.contentDocument.open();
-		//~ $iframe.contentDocument.write($html);
-		//~ $iframe.contentDocument.close();
 	});
 	
 	$library_el.addEventListener('click', function($evt) {

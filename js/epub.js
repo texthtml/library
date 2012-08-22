@@ -1,306 +1,334 @@
 (function($wr) {
 	"use strict";
 	
-	var EPub = {
-		spine: function($spine, $callback) {
-			var 
-				$fct = function($href) {
-					this.file($href, function($file) {
-						console.log($href, $file);
-						if($file === null) {
-							this.filenames(function($fn) {
-								console.log($fn.indexOf($href), $fn);
-							});
-						}
-						else {
-						$file.render($callback);
-					}
-					}.bind(this));
-				}.bind(this);
-			
-			if($spine === undefined) {
-				$spine = 0;
-			}
-			
-			if(typeof $spine === 'number') {
-				this.itemrefs(function($itemrefs) {
-					this.rootfile(function($rootfile) {
-						$rootfile.one('[id="' + $itemrefs[$spine].getAttribute('idref') + '"]', function($item) {
-							$fct($item.getAttribute('href'));
-						});
-					}.bind(this));
-				}.bind(this));
-			}
-			else {
-				$fct($spine);
-			}
-		}, 
+	var EPub = (function() {
 		
-		item: function($id) {
-			this.rootfile(function($rootfile) {
-				 
-			}).bind(this);
-		}, 
-		
-		itemrefs: function($callback) {
-			if(this.$itemrefs === undefined) {
-				this.rootfile(function($rootfile) {
-					$rootfile.all('spine itemref', function($itemrefs) {
-						this.$itemrefs = $itemrefs;
-						$callback($itemrefs);
-					}.bind(this));
-				}.bind(this));
-			}
-			else {
-				$callback(this.$itemrefs);
-			}
-		}, 
-		
-		title: function($callback) {
-			this.metadata(function($titles) {
+		var 
+			render_spine = function($xmldoc, $folder, $callback, $spine) {
 				var 
-					$title = $titles.length > 0 ? $titles[0].value : null;
-				
-				$callback($title);
-			}, 'title');
-		}, 
-		
-		metadata: function($callback, $aliases) {
-			var 
-				$metadata_aliases = $aliases, 
-				$metadata_names = {
-						identifier   : 'identifier', 
-						title        : 'title', 
-						language     : 'language', 
-						contributor  : 'contributor', 
-						coverage     : 'coverage', 
-						creator      : 'creator', 
-						date         : 'date', 
-						description  : 'description', 
-						format       : 'format', 
-						publisher    : 'publisher', 
-						relation     : 'relation', 
-						rights       : 'rights', 
-						source       : 'source', 
-						subject      : 'subject', 
-						type         : 'type', 
-						series_index : 'meta[name="calibre:series_index"]', 
-						series       : 'meta[name="calibre:series"]' 
-				};
-			
-			if(typeof $metadata_aliases === 'string') {
-				$metadata_aliases = [$metadata_aliases];
-			}
-			if($metadata_aliases === undefined) {
-				$metadata_aliases = [];
-				for(var $alias in $metadata_names) {
-					$metadata_aliases.push($alias);
-				}
-			}
-			
-			this.rootfile(function($rootfile) {
-				var 
-					$result = {}, 
-					$fct = function() {
-						if($metadata_aliases.length === 0) {
-							$callback(typeof $aliases === 'string' ? $result[$aliases] : $result);
+					$html, 
+					$elements = $xmldoc.querySelectorAll('link[href],image,img[src]'), 
+					$count = $elements.length, 
+					fct = function() {
+						if($count-- === 0) {
+							$callback(new XMLSerializer().serializeToString($xmldoc), $spine);
 						}
 						else {
 							var 
-								$alias = $metadata_aliases.pop(), 
-								$name = $metadata_names[$alias] === undefined ? 
-									$alias : 
-									$metadata_names[$alias];
+								$element = $elements[$count], 
+								$attribute_name = {
+									link: 'href', 
+									image: 'xlink:href', 
+									img: 'src'
+								}[$element.nodeName], 
+								$rel_path = $element.getAttribute($attribute_name);
 							
-							$rootfile.all('metadata > ' + $name, function($metadata) {
-								
-								$result[$alias] = Array.prototype.map.call($metadata, function($metadata) {
-									var 
-										$value = $metadata.textContent, 
-										$id    = $metadata.getAttribute('id'), 
-										$lang  = $metadata.getAttribute('lang'), 
-										$dir   = $metadata.getAttribute('dir');
-									
-									if($metadata.nodeName === 'meta' && $metadata.firstChild === null) {
-										$value = $metadata.getAttribute('content');
-									}
-									
-									return {
-										value: $value, 
-										id   : $id   === null ? undefined : $id, 
-										lang : $lang === null ? undefined : $lang, 
-										dir  : $dir  === null ? undefined : $dir
+							this.file($folder + $rel_path, function($file) {
+								if($file !== null) {
+									switch($element.nodeName) {
+										default: 
+											$element.setAttribute($attribute_name, URL.createObjectURL($file.$blob));
+											fct();
 									};
-								});
-								
-								$fct();
+								}
+								else {
+									console.log($folder, $rel_path);
+									fct();
+								}
 							});
 						}
+					}.bind(this);
+				
+				fct();
+			};
+		
+		return {
+			spine: function($spine, $callback) {
+				var 
+					fct = function($href, $folder) {
+						this.file($href, function($file) {
+							if($file === null) {
+								this.filenames(function($filenames) {
+									console.error($filenames, $filenames.indexOf($href));
+								});
+							}
+							
+							$file.xmldoc(function($xmldoc) {
+								render_spine.call(this, $xmldoc, $folder, $callback, $spine);
+							}.bind(this));
+						}.bind(this));
+					}.bind(this);
+				
+				if($spine === undefined) {
+					$spine = 0;
+				}
+				
+				if(typeof $spine === 'number') {
+					this.itemrefs(function($itemrefs) {
+						this.rootfile(function($rootfile) {
+							$rootfile.one('[id="' + $itemrefs[$spine].getAttribute('idref') + '"]', function($item) {
+								this.rootfile_dir(function($rootfile_dir) {
+									fct($rootfile_dir + $item.getAttribute('href'), $rootfile_dir);
+								});
+							}.bind(this));
+						}.bind(this));
+					}.bind(this));
+				}
+				else {
+					fct($spine);
+				}
+			}, 
+			
+			item: function($id) {
+				this.rootfile(function($rootfile) {
+					 
+				}).bind(this);
+			}, 
+			
+			itemrefs: function($callback) {
+				if(this.$itemrefs === undefined) {
+					this.rootfile(function($rootfile) {
+						$rootfile.all('spine itemref', function($itemrefs) {
+							this.$itemrefs = $itemrefs;
+							$callback($itemrefs);
+						}.bind(this));
+					}.bind(this));
+				}
+				else {
+					$callback(this.$itemrefs);
+				}
+			}, 
+			
+			title: function($callback) {
+				this.metadata(function($titles) {
+					var 
+						$title = $titles.length > 0 ? $titles[0].value : null;
+					
+					$callback($title);
+				}, 'title');
+			}, 
+			
+			metadata: function($callback, $aliases) {
+				var 
+					$metadata_aliases = $aliases, 
+					$metadata_names = {
+							identifier   : 'identifier', 
+							title        : 'title', 
+							language     : 'language', 
+							contributor  : 'contributor', 
+							coverage     : 'coverage', 
+							creator      : 'creator', 
+							date         : 'date', 
+							description  : 'description', 
+							format       : 'format', 
+							publisher    : 'publisher', 
+							relation     : 'relation', 
+							rights       : 'rights', 
+							source       : 'source', 
+							subject      : 'subject', 
+							type         : 'type', 
+							series_index : 'meta[name="calibre:series_index"]', 
+							series       : 'meta[name="calibre:series"]' 
 					};
 				
-				$fct();
-			});
-		}, 
-		
-		identifier: function($callback) {
-			this.rootfile(function($rootfile) {
-				$rootfile.xmldoc(function($xmldoc) {
+				if(typeof $metadata_aliases === 'string') {
+					$metadata_aliases = [$metadata_aliases];
+				}
+				if($metadata_aliases === undefined) {
+					$metadata_aliases = [];
+					for(var $alias in $metadata_names) {
+						$metadata_aliases.push($alias);
+					}
+				}
+				
+				this.rootfile(function($rootfile) {
 					var 
-						$unique_identifier = $xmldoc.documentElement.getAttribute('unique-identifier');
+						$result = {}, 
+						fct = function() {
+							if($metadata_aliases.length === 0) {
+								$callback(typeof $aliases === 'string' ? $result[$aliases] : $result);
+							}
+							else {
+								var 
+									$alias = $metadata_aliases.pop(), 
+									$name = $metadata_names[$alias] === undefined ? 
+										$alias : 
+										$metadata_names[$alias];
+								
+								$rootfile.all('metadata > ' + $name, function($metadata) {
+									
+									$result[$alias] = Array.prototype.map.call($metadata, function($metadata) {
+										var 
+											$value = $metadata.textContent, 
+											$id    = $metadata.getAttribute('id'), 
+											$lang  = $metadata.getAttribute('lang'), 
+											$dir   = $metadata.getAttribute('dir');
+										
+										if($metadata.nodeName === 'meta' && $metadata.firstChild === null) {
+											$value = $metadata.getAttribute('content');
+										}
+										
+										return {
+											value: $value, 
+											id   : $id   === null ? undefined : $id, 
+											lang : $lang === null ? undefined : $lang, 
+											dir  : $dir  === null ? undefined : $dir
+										};
+									});
+									
+									fct();
+								});
+							}
+						};
 					
-					$rootfile.one('identifier[id=' + $unique_identifier + ']', function($identifier) {
+					fct();
+				});
+			}, 
+			
+			identifier: function($callback) {
+				this.rootfile(function($rootfile) {
+					$rootfile.xmldoc(function($xmldoc) {
 						var 
-							$text = $identifier === null ? null : $identifier.textContent;
-						$callback($text);
+							$unique_identifier = $xmldoc.documentElement.getAttribute('unique-identifier');
+						
+						$rootfile.one('identifier[id="' + $unique_identifier + '"],identifier', function($identifier) {
+							var 
+								$text = $identifier === null ? null : $identifier.textContent;
+							$callback($text);
+						});
 					});
 				});
-			});
-		}, 
-		
-		version: function($callback) {
-			this.rootfile(function($rootfile) {
-				$rootfile.xmldoc(function($xmldoc) {
-					var 
-						$version = $xmldoc.documentElement.getAttribute('version');
-					
-					$callback($version);
-				});
-			});
-		}, 
-		
-		rootfile: function($callback) {
-			if(this.$rootfile === undefined) {
-				this.container(function($container) {
-					$container.one('container rootfiles rootfile', function($rootfile) {
+			}, 
+			
+			version: function($callback) {
+				this.rootfile(function($rootfile) {
+					$rootfile.xmldoc(function($xmldoc) {
 						var 
-							$rootfile_path = $rootfile === null ? null : $rootfile.getAttribute('full-path');
+							$version = $xmldoc.documentElement.getAttribute('version');
 						
+						$callback($version);
+					});
+				});
+			}, 
+			
+			rootfile: function($callback) {
+				if(this.$rootfile === undefined) {
+					this.rootfile_path(function($rootfile_path) {
 						this.file($rootfile_path, function($rootfile) {
 							this.$rootfile = $rootfile;
 							$callback(this.$rootfile);
 						}.bind(this));
 					}.bind(this));
-				}.bind(this));
-			}
-			else {
-				$callback(this.$rootfile);
-			}
-		},
-		
-		container: function($callback) {
-			this.file('META-INF/container.xml', $callback);
-		}, 
-		
-		file: function($name, $callback) {
-			if(this.$files === undefined) {
-				this.$files = {};
-			}
-			if(this.$files[$name] === undefined) { 
-				var 
-					$request = this.reader().getFile($name);
-				
-				$request.addEventListener('success', function($event) {
-					this.$files[$name] = EPubFile_factory($event.target.result, this);
-					$callback(this.$files[$name]);
-				}.bind(this));
-				
-				$request.addEventListener('error', function($event) {
-					this.$files[$name] = null;
-					$callback(this.$files[$name]);
-				}.bind(this));
-			}
-			else {
-				$callback(this.$files[$name]);
-			}
-		}, 
-		
-		filenames: function($callback) {
-			if(this.$filenames === undefined) {
-				var 
-					$request = this.reader().getFilenames();
-				
-				$request.addEventListener('success', function($event) {
-					this.$filenames = $event.target.result;
-					$callback(this.$filenames);
-				}.bind(this));
-				
-				$request.addEventListener('error', function($event) {
-					this.$filenames = null;
-					$callback(this.$filenames);
-				}.bind(this));
-			}
-			else {
-				$callback(this.$filenames);
-			}
-		}, 
-		
-		reader: function() {
-			if(this.$reader === undefined) {
-				this.$reader = new ArchiveReader(this.$blob);
-			}
-			return this.$reader;
-		}
-	};
-	
-	var EPubFile = {
-		render: (function() {
-			var 
-				dataURI = function($type, $data) {
-					return 'data:' + $type +',' + escape($data);
-				}, 
-				$renderer = {
-					'application/xhtml+xml': function($callback) {
-						this.xmldoc(function($xmldoc) {
-							var 
-								$images = $xmldoc.querySelectorAll('image,link[href]'), 
-								$count = $images.length, 
-								$fct = function() {
-									if($count-- === 0) {
-										$callback(new XMLSerializer().serializeToString($xmldoc));
-									}
-								};
-							
-							Array.prototype.forEach.call($images, function($el) {
-								var 
-									$href = $el.getAttribute('href');
-								
-								if($href === null) {
-									$href = $el.getAttributeNS('http://www.w3.org/1999/xlink', 'href');
-								}
-								
-								this.$ebook.file($href, function($file) {
-									$file.render(function($render) {
-										$el.setAttribute('href', dataURI($file.type(), $render));
-										$fct();
-									});
-								}.bind(this));
-							}.bind(this));
-							
-							$fct();
-						}.bind(this));
-					}
-				};
-			
-			return function($callback) {
-				if(this.$render === undefined) {
-					if($renderer[this.type()] !== undefined) {
-						$renderer[this.type()].call(this, function($render) {
-							this.$render = $render;
-							$callback(this.$render);
-						}.bind(this));
-					}
-					else {
-						this.data(function($data) {
-							this.$render = $data;
-							$callback(this.$render);
-						}.bind(this));
-					}
 				}
 				else {
-					$callback(this.$render);
+					$callback(this.$rootfile);
 				}
-			};
-		}) (), 
+			},
+			
+			rootfile_dir: function($callback) {
+				this.rootfile_path(function($rootfile_path) {
+					var 
+						$pos          = $rootfile_path.lastIndexOf('/'), 
+						$rootfile_dir = $pos === -1 ? '' : $rootfile_path.slice(0, $pos + 1);
+					
+					$callback($rootfile_dir);
+				});
+			},
+			
+			rootfile_path: function($callback) {
+				if(this.$rootfile_path === undefined) {
+					this.container(function($container) {
+						$container.one('container rootfiles rootfile', function($rootfile) {
+							this.$rootfile_path = $rootfile === null ? null : $rootfile.getAttribute('full-path');
+							$callback(this.$rootfile_path);
+						}.bind(this));
+					}.bind(this));
+				}
+				else {
+					$callback(this.$rootfile_path);
+				}
+			}, 
+			
+			container: function($callback) {
+				this.file('META-INF/container.xml', $callback);
+			}, 
+			
+			file: function($name, $callback) {
+				$name = $name.replace('/../', '/');
+				if(this.$files === undefined) {
+					this.$files = {};
+				}
+				if(this.$files[$name] === undefined) { 
+					var 
+						$request = this.reader().getFile($name);
+					
+					console.log($name);
+					$request.addEventListener('success', function($event) {
+						this.$files[$name] = EPubFile_factory($event.target.result);
+						$callback(this.$files[$name]);
+					}.bind(this));
+					
+					$request.addEventListener('error', function($event) {
+						this.$files[$name] = null;
+						$callback(this.$files[$name]);
+					}.bind(this));
+				}
+				else {
+					$callback(this.$files[$name]);
+				}
+			}, 
+			
+			filenames: function($callback) {
+				if(this.$filenames === undefined) {
+					var 
+						$request = this.reader().getFilenames();
+					
+					$request.addEventListener('success', function($event) {
+						this.$filenames = $event.target.result;
+						$callback(this.$filenames);
+					}.bind(this));
+					
+					$request.addEventListener('error', function($event) {
+						this.$filenames = null;
+						$callback(this.$filenames);
+					}.bind(this));
+				}
+				else {
+					$callback(this.$filenames);
+				}
+			}, 
+			
+			reader: function() {
+				if(this.$reader === undefined) {
+					this.$reader = new ArchiveReader(this.$blob);
+				}
+				return this.$reader;
+			}
+		};
+	}) ();
+	
+	var EPubFile = {
+		dataURL: function($callback) {
+			if(this.$dataURL === undefined) {
+				var $reader = new FileReader(this.$blob);
+				
+				$reader.addEventListener('load', function($event) {
+					this.$dataURL = $event.target.result;
+					$callback(this.$dataURL);
+				}.bind(this));
+				
+				$reader.addEventListener('error', function($event) {
+					this.$dataURL = null;
+					$callback(this.$dataURL);
+				}.bind(this));
+				
+				$reader.readAsDataURL(this.$blob);
+				
+			}
+			else {
+				$callback($this.$dataURL);
+			}
+		}, 
 		
 		type: function() {
 			return this.$blob.type;
@@ -313,17 +341,17 @@
 				$reader.addEventListener('load', function($event) {
 					this.$data = $event.target.result;
 					$callback(this.$data);
-				});
+				}.bind(this));
 				
 				$reader.addEventListener('error', function($event) {
 					this.$data = null;
 					$callback(this.$data);
-				});
+				}.bind(this));
 				
 				$reader.readAsText(this.$blob);
 			}
 			else {
-				$callback($this.$data);
+				$callback(this.$data);
 			}
 		}, 
 		
@@ -346,6 +374,7 @@
 		
 		one: function($selectors, $callback) {
 			this.xmldoc(function($xmldoc) {
+				console.log($selectors);
 				$callback($xmldoc.querySelector($selectors));
 			});
 		}, 
@@ -358,8 +387,8 @@
 		}, 
 	};
 	
-	var EPubFile_factory = function($blob, $ebook) {
-		return Object.create(EPubFile, {$blob: {value: $blob}, $ebook: {value: $ebook}});
+	var EPubFile_factory = function($blob) {
+		return Object.create(EPubFile, {$blob: {value: $blob}});
 	};
 	
 	var EPub_factory = function($blob) {
