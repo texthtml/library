@@ -24,29 +24,31 @@
 			</div>
 		</section>
 -->
-		<div class="pane" id="bookmarks">
+		<div class="pane" id="bookmarks"  data-prefix="bookmarks">
 			<header>
 				<h1>Bookmarks</h1>
+				<p>not implemented</p>
 			</header>
 			
 			<div class="content">
 			</div>
 			
-			<a class="back" href="#library">Back</a>
+			<a class="back" href="#library" data-prefix="library">Back</a>
 		</div>
 		
-		<div class="pane" id="settings">
+		<div class="pane" id="settings" data-prefix="settings">
 			<header>
 				<h1>Settings</h1>
+				<p>not implemented</p>
 			</header>
 			
 			<div class="content">
 			</div>
 			
-			<a class="back" href="#library">Back</a>
+			<a class="back" href="#library" data-prefix="library">Back</a>
 		</div>
 		
-		<div class="pane" id="add">
+		<div class="pane" id="add" data-prefix="add">
 			<header>
 				<h1>Add EBook</h1>
 			</header>
@@ -60,23 +62,25 @@
 				</form>
 			</div>
 			
-			<a class="back" href="#library">Back</a>
+			<a class="back" href="#library" data-prefix="library">Back</a>
 		</div>
 		
-		<div class="pane" id="tos">
+		<div class="pane" id="tos" data-prefix="tos">
 			<header>
 				<h1>Terms of Service</h1>
+				<p>not implemented</p>
 			</header>
 			
 			<div class="content">
 			</div>
 			
-			<a class="back" href="#library">Back</a>
+			<a class="back" href="#library" data-prefix="library">Back</a>
 		</div>
 		
 		<div class="ebook pane bookmarks" data-prefix="ebook-bookmarks" id="ebook-bookmarks">
 			<header>
 				<h1>Bookmarks</h1>
+				<p>not implemented</p>
 			</header>
 			
 			<div class="content">
@@ -88,6 +92,7 @@
 		<div class="ebook pane settings"  data-prefix="ebook-settings"  id="ebook-settings">
 			<header>
 				<h1>Settings</h1>
+				<p>not implemented</p>
 			</header>
 			
 			<div class="content">
@@ -99,6 +104,7 @@
 		<div class="ebook pane toc"       data-prefix="toc"             id="toc">
 			<header>
 				<h1>Table of Contents</h1>
+				<p>not implemented</p>
 			</header>
 			
 			<div class="content">
@@ -109,7 +115,7 @@
 		
 		<div class="ebook"                data-prefix="ebook"           id="ebook">
 			<header>
-				<a href="#library">Library</a>
+				<a href="#library" data-prefix="library">Library</a>
 				<h1>EBook</h1>
 			</header>
 			
@@ -148,10 +154,12 @@
 			<footer>
 				<nav>
 					<ul>
-						<li><a href="#bookmarks">Bookmarks</a></li>
-						<li><a href="#settings">Settings</a></li>
-						<li><a href="#add">Add EBook</a></li>
-						<li><a href="#tos"><abbr title="Terms of Service">ToS</abbr></a></li>
+						<li><a data-prefix="bookmarks" href="#bookmarks">Bookmarks</a></li>
+						<li><a data-prefix="settings"  href="#settings">Settings</a></li>
+						<li><a data-prefix="add"       href="#add">Add EBook</a></li>
+						<li><a data-prefix="tos"       href="#tos">
+							<abbr title="Terms of Service">ToS</abbr></a>
+						</li>
 					</ul>
 				</nav>
 			</footer>
