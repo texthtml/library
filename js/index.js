@@ -63,110 +63,138 @@ document.addEventListener('DOMContentLoaded', function() {
 		};
 	}) ();
 	
+	var load_ebook = function($ebook_id, $callback) {
+		var 
+			$ebook_ = '', 
+			$ebook_spine = '', 
+			$ebook_hash = '';
+		
+		[$ebook_id, $ebook_spine, $ebook_hash] = split_ebook_hash($ebook_id);
+		
+		if($ebook_id !== load_ebook.$current_ebook_id) {
+			$wr.library().load($ebook_id, function($ebook) {
+				load_ebook.$current_ebook = $ebook;
+				load_ebook.$current_ebook_id = $ebook_id;
+				
+				$callback($ebook, $ebook_id, $ebook_spine, $ebook_hash);
+			});
+		}
+		else {
+			$callback(load_ebook.$current_ebook, $ebook_id, $ebook_spine, $ebook_hash);
+		}
+	};
+	
 	var hash_change = function() {
 		if(window === window.top) {
 			var 
 				$hash = window.location.hash.substr(1), 
 				$pos = $hash.search('/'), 
 				$prefix = $hash.substr(0, $pos), 
-				$ebook_id = ($pos === -1) ? undefined : $hash.substr($pos + 1), 
-				$ebook_spine, 
-				$ebook_hash;
+				$ebook_id = ($pos === -1) ? undefined : $hash.substr($pos + 1);
 			
 			Array.prototype.forEach.call(document.querySelectorAll('.target'), function($el) {
 				$el.classList.remove('target');
 			});
 			
 			if($ebook_id !== undefined) {
-				var $ebook_ = $ebook_spine = $ebook_hash = '';
-				
-				[$ebook_id, $ebook_spine, $ebook_hash] = split_ebook_hash($ebook_id);
-				
-				/**
-				 * seamless "polyfill" 
-				 * @see https://bugzilla.mozilla.org/show_bug.cgi?id=80713
-				 * @see #35
-				 */
-				var $parent = $iframe_el.parentNode;
-				$parent.removeChild($iframe_el);
-				$iframe_el = document.createElement('iframe');
-				$parent.insertBefore($iframe_el, $ebook_el.querySelector('a[rel=next]'));
-				
-				$iframe_el.contentDocument.open();
-				$iframe_el.contentDocument.write('loading ebook…');
-				$iframe_el.contentDocument.close();
-				
-				Array.prototype.forEach.call($ebook_el.querySelectorAll('nav a[data-prefix]'), function($el) {
-					$el.href = '#' + $el.dataset.prefix + '/' + $ebook_id;
-				});
-				
-				$wr.library().load($ebook_id, function($ebook) {
-					$ebook.spine($ebook_spine, function($html, $spine) {
-						/** seamless "polyfill" **/
-						var $parent = $iframe_el.parentNode;
-						$parent.removeChild($iframe_el);
-						$iframe_el = document.createElement('iframe');
-						$parent.insertBefore($iframe_el, $ebook_el.querySelector('a[rel=next]'));
-						
-						$iframe_el.contentDocument.open();
-						$iframe_el.contentDocument.write($html);
-						$iframe_el.contentDocument.close();
-						
-						/** seamless "polyfill" **/
-						$iframe_el.onload = function() {
-								var 
-									$height = $iframe_el.contentDocument.documentElement.getBoundingClientRect().height;
-								$iframe_el.style.height = $height + 'px';
-								$height = $iframe_el.contentDocument.documentElement.scrollHeight;
-								$iframe_el.style.height = $height + 'px';
-						};
-						
-						Array.prototype.forEach.call($iframe_el.contentDocument.querySelectorAll('a'), function($link) {
-							$link.addEventListener('click', function($event) {
-								if(this.nodeName === 'A') {
-									$event.preventDefault();
-									
-									var 
-										$href = $spine.slice(0, $spine.lastIndexOf('/') + 1) + this.getAttribute('href'), 
-										$last_href;
-									
-									do {
-										$last_href = $href;
-										$href = $href.replace(/[^\/]*\/\.\.\//g, '');
-									} while($last_href !== $href);
-									
-									$href = $href.replace('@', '\\@', 'g');
-									$href = $href.replace('#', '@', 'g');
-									
-									window.location.hash = $ebook_el.dataset.prefix + '/' + $ebook_id + '@' + $href;
-								}
-							});
-						});
-						
-						if($ebook_hash !== undefined) {
-							var 
-								$el = $iframe_el.contentDocument.querySelector($ebook_hash), 
-								$top = $el === null ? 0 : $el.getClientRects()[0].top;
-							
-							$iframe_el.contentWindow.scrollTo(0, $top);
-						}
-						
-						$ebook.prev_next($spine, function($prev, $next) {
-							$ebook_el.querySelector('a[rel=prev]').href = ($prev === null) ? '#' : '#ebook/' + $ebook_id.replace('@', '\\@', 'g') + '@' + $prev.replace('@', '\\@', 'g');
-							$ebook_el.querySelector('a[rel=next]').href = ($next === null) ? '#' : '#ebook/' + $ebook_id.replace('@', '\\@', 'g') + '@' + $next.replace('@', '\\@', 'g');
-						});
-					});
-				});
-				
-				$hash = 'ebook';
+				load_ebook($ebook_id, hash_change[$prefix]);
 			}
 			
-			var $target = document.getElementById('x-'+$hash);
+			var $target = document.getElementById('x-'+$prefix);
 			if($target !== null) {
 				$target.classList.add('target');
 			}
 		}
 	};
+	
+	hash_change.ebook = function($ebook, $ebook_id, $ebook_spine, $ebook_hash) {
+		var move_to_hash = function() {
+			if($ebook_hash !== undefined) {
+				var 
+					$el = $iframe_el.contentDocument.querySelector($ebook_hash), 
+					$top = $el === null ? 0 : $el.getClientRects()[0].top;
+				
+				$ebook_el.querySelector('.content').scrollTop = Math.round($top);
+			}
+		};
+		
+		if(hash_change.ebook.$ebook_spine !== $ebook_spine) {
+			/**
+			 * seamless "polyfill" 
+			 * @see https://bugzilla.mozilla.org/show_bug.cgi?id=80713
+			 * @see #35
+			 */
+			var $parent = $iframe_el.parentNode;
+			$parent.removeChild($iframe_el);
+			$iframe_el = document.createElement('iframe');
+			$parent.insertBefore($iframe_el, $ebook_el.querySelector('a[rel=next]'));
+			
+			$iframe_el.contentDocument.open();
+			$iframe_el.contentDocument.write('loading ebook…');
+			$iframe_el.contentDocument.close();
+			
+			Array.prototype.forEach.call($ebook_el.querySelectorAll('nav a[data-prefix]'), function($el) {
+				$el.href = '#' + $el.dataset.prefix + '/' + $ebook_id;
+			});
+			
+			$ebook.spine($ebook_spine, function($html, $spine) {
+				hash_change.ebook.$ebook_spine = $ebook_spine;
+				
+				/** seamless "polyfill" **/
+				var $parent = $iframe_el.parentNode;
+				$parent.removeChild($iframe_el);
+				$iframe_el = document.createElement('iframe');
+				$parent.insertBefore($iframe_el, $ebook_el.querySelector('a[rel=next]'));
+				
+				$ebook.prev_next($spine, function($prev, $next) {
+					$ebook_el.querySelector('a[rel=prev]').href = ($prev === null) ? '#' : '#ebook/' + $ebook_id.replace('@', '\\@', 'g') + '@' + $prev.replace('@', '\\@', 'g');
+					$ebook_el.querySelector('a[rel=next]').href = ($next === null) ? '#' : '#ebook/' + $ebook_id.replace('@', '\\@', 'g') + '@' + $next.replace('@', '\\@', 'g');
+				});
+				
+				$iframe_el.contentDocument.open();
+				$iframe_el.contentDocument.write($html);
+				$iframe_el.contentDocument.close();
+				
+				$iframe_el.onload = function() {
+					/** seamless "polyfill" **/
+					var 
+						$height = $iframe_el.contentDocument.documentElement.getBoundingClientRect().height;
+					$iframe_el.style.height = $height + 'px';
+					$height = $iframe_el.contentDocument.documentElement.scrollHeight;
+					$iframe_el.style.height = $height + 'px';
+					
+					move_to_hash();
+				};
+				
+				Array.prototype.forEach.call($iframe_el.contentDocument.querySelectorAll('a'), function($link) {
+					$link.addEventListener('click', function($event) {
+						if(this.nodeName === 'A') {
+							$event.preventDefault();
+							
+							var 
+								$href = $spine.slice(0, $spine.lastIndexOf('/') + 1) + this.getAttribute('href'), 
+								$last_href;
+							
+							do {
+								$last_href = $href;
+								$href = $href.replace(/[^\/]*\/\.\.\//g, '');
+							} while($last_href !== $href);
+							
+							$href = $href.replace('@', '\\@', 'g');
+							$href = $href.replace('#', '@#', 'g');
+							
+							window.location.hash = $ebook_el.dataset.prefix + '/' + $ebook_id + '@' + $href;
+						}
+					});
+				});
+			});
+		}
+		else {
+			move_to_hash();
+		}
+	}
+	
+	hash_change.ebook.$ebook_spine = null;
 	
 	jsviews.templates({
 		libraryItem: document.getElementById('library-item').innerHTML

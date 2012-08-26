@@ -71,6 +71,7 @@
 					});
 				});
 			}, 
+			
 			spine: function($spine, $callback) {
 				var 
 					fct = function($href, $folder) {
