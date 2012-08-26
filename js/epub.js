@@ -4,18 +4,12 @@
 	var EPub = (function() {
 		
 		var 
-			render_spine = function($xmldoc, $folder, $callback, $spine) {
+			render_spine = function($file, $folder, $callback, $href) {
 				var 
-					$html, 
-					$elements = $xmldoc.querySelectorAll('link[href],image,img[src]'), 
-					$count = $elements.length, 
-					fct = function() {
-						if($count-- === 0) {
-							$callback(new XMLSerializer().serializeToString($xmldoc), $spine);
-						}
-						else {
+					fct = function($iterator) {
+						try {
 							var 
-								$element = $elements[$count], 
+								$element = $iterator.next(), 
 								$attribute_name = {
 									link: 'href', 
 									image: 'xlink:href', 
@@ -28,55 +22,77 @@
 									switch($element.nodeName) {
 										default: 
 											$element.setAttribute($attribute_name, URL.createObjectURL($file.$blob));
-											fct();
+											fct($iterator);
 									};
 								}
 								else {
-									console.log($folder, $rel_path);
-									fct();
+									fct($iterator);
 								}
 							});
 						}
+						catch($e) {
+							if($e instanceof StopIteration) {
+								$file.xmldoc(function($xmldoc) {
+									$callback(
+										new XMLSerializer().serializeToString($xmldoc), 
+										$href
+									);
+								}.bind(this));
+							}
+							else {
+								throw $e;
+							}
+						}
 					}.bind(this);
-				
-				fct();
+					
+				$file.all('link[href],image,img[src]', function($elements) {
+					fct.call(this, $elements.iterator());
+				}.bind(this));
 			};
 		
 		return {
+			prev_next: function($itemhref, $callback) {
+				this.rootfile(function($rootfile) {
+					$rootfile.xmldoc(function($xmldoc) {
+						var 
+							$item = $xmldoc.querySelector('manifest item[href="' + $itemhref + '"]'), 
+							$item_id = $item.getAttribute('id'), 
+							$itemref = $xmldoc.querySelector('spine itemref[idref="' + $item_id + '"]'), 
+							$prev_itemref = $itemref.previousElementSibling, 
+							$next_itemref = $itemref.nextElementSibling, 
+							$prev_id = $prev_itemref === null ? null : $prev_itemref.getAttribute('idref'), 
+							$next_id = $next_itemref === null ? null : $next_itemref.getAttribute('idref'), 
+							$prev_item = $prev_id === null ? null : $xmldoc.querySelector('manifest item[id="' + $prev_id + '"]'), 
+							$next_item = $next_id === null ? null : $xmldoc.querySelector('manifest item[id="' + $next_id + '"]'), 
+							$prev_href = $prev_item === null ? null : $prev_item.getAttribute('href'), 
+							$next_href = $next_item === null ? null : $next_item.getAttribute('href');
+						
+						$callback($prev_href, $next_href);
+					});
+				});
+			}, 
 			spine: function($spine, $callback) {
 				var 
 					fct = function($href, $folder) {
-						this.file($href, function($file) {
-							if($file === null) {
-								this.filenames(function($filenames) {
-									console.error($filenames, $filenames.indexOf($href));
-								});
-							}
-							
-							$file.xmldoc(function($xmldoc) {
-								render_spine.call(this, $xmldoc, $folder, $callback, $spine);
-							}.bind(this));
+						this.file($folder + $href, function($file) {
+							render_spine.call(this, $file, $folder, $callback, $href);
 						}.bind(this));
 					}.bind(this);
 				
-				if($spine === undefined) {
-					$spine = 0;
-				}
-				
-				if(typeof $spine === 'number') {
-					this.itemrefs(function($itemrefs) {
-						this.rootfile(function($rootfile) {
-							$rootfile.one('[id="' + $itemrefs[$spine].getAttribute('idref') + '"]', function($item) {
-								this.rootfile_dir(function($rootfile_dir) {
-									fct($rootfile_dir + $item.getAttribute('href'), $rootfile_dir);
-								});
+				this.rootfile_dir(function($rootfile_dir) {
+					if($spine === undefined) {
+						this.itemrefs(function($itemrefs) {
+							this.rootfile(function($rootfile) {
+								$rootfile.one('[id="' + $itemrefs[0].getAttribute('idref') + '"]', function($item) {
+									fct($item.getAttribute('href'), $rootfile_dir);
+								}.bind(this));
 							}.bind(this));
 						}.bind(this));
-					}.bind(this));
-				}
-				else {
-					fct($spine);
-				}
+					}
+					else {
+						fct($spine, $rootfile_dir);
+					}
+				}.bind(this));
 			}, 
 			
 			item: function($id) {
@@ -262,7 +278,6 @@
 					var 
 						$request = this.reader().getFile($name);
 					
-					console.log($name);
 					$request.addEventListener('success', function($event) {
 						this.$files[$name] = EPubFile_factory($event.target.result);
 						$callback(this.$files[$name]);
@@ -374,7 +389,6 @@
 		
 		one: function($selectors, $callback) {
 			this.xmldoc(function($xmldoc) {
-				console.log($selectors);
 				$callback($xmldoc.querySelector($selectors));
 			});
 		}, 

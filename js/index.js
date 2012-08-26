@@ -82,6 +82,16 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				[$ebook_id, $ebook_spine, $ebook_hash] = split_ebook_hash($ebook_id);
 				
+				/**
+				 * seamless "polyfill" 
+				 * @see https://bugzilla.mozilla.org/show_bug.cgi?id=80713
+				 * @see #35
+				 */
+				var $parent = $iframe_el.parentNode;
+				$parent.removeChild($iframe_el);
+				$iframe_el = document.createElement('iframe');
+				$parent.insertBefore($iframe_el, $ebook_el.querySelector('a[rel=next]'));
+				
 				$iframe_el.contentDocument.open();
 				$iframe_el.contentDocument.write('loading ebook…');
 				$iframe_el.contentDocument.close();
@@ -90,24 +100,47 @@ document.addEventListener('DOMContentLoaded', function() {
 					$el.href = '#' + $el.dataset.prefix + '/' + $ebook_id;
 				});
 				
-				if($ebook_spine !== undefined) {
-					$ebook_spine = parseInt($ebook_spine);
-				}
-				
 				$wr.library().load($ebook_id, function($ebook) {
 					$ebook.spine($ebook_spine, function($html, $spine) {
-						var 
-							$link;
+						/** seamless "polyfill" **/
+						var $parent = $iframe_el.parentNode;
+						$parent.removeChild($iframe_el);
+						$iframe_el = document.createElement('iframe');
+						$parent.insertBefore($iframe_el, $ebook_el.querySelector('a[rel=next]'));
 						
 						$iframe_el.contentDocument.open();
 						$iframe_el.contentDocument.write($html);
 						$iframe_el.contentDocument.close();
 						
-						$iframe_el.contentDocument.addEventListener('click', function($event) {
-							if($event.target.nodeName === 'a') {
-								$event.preventDefault();
-								console.log($event);
-							}
+						/** seamless "polyfill" **/
+						$iframe_el.onload = function() {
+								var 
+									$height = $iframe_el.contentDocument.documentElement.getBoundingClientRect().height;
+								$iframe_el.style.height = $height + 'px';
+								$height = $iframe_el.contentDocument.documentElement.scrollHeight;
+								$iframe_el.style.height = $height + 'px';
+						};
+						
+						Array.prototype.forEach.call($iframe_el.contentDocument.querySelectorAll('a'), function($link) {
+							$link.addEventListener('click', function($event) {
+								if(this.nodeName === 'A') {
+									$event.preventDefault();
+									
+									var 
+										$href = $spine.slice(0, $spine.lastIndexOf('/') + 1) + this.getAttribute('href'), 
+										$last_href;
+									
+									do {
+										$last_href = $href;
+										$href = $href.replace(/[^\/]*\/\.\.\//g, '');
+									} while($last_href !== $href);
+									
+									$href = $href.replace('@', '\\@', 'g');
+									$href = $href.replace('#', '@', 'g');
+									
+									window.location.hash = $ebook_el.dataset.prefix + '/' + $ebook_id + '@' + $href;
+								}
+							});
 						});
 						
 						if($ebook_hash !== undefined) {
@@ -115,19 +148,13 @@ document.addEventListener('DOMContentLoaded', function() {
 								$el = $iframe_el.contentDocument.querySelector($ebook_hash), 
 								$top = $el === null ? 0 : $el.getClientRects()[0].top;
 							
-							console.log($top);
 							$iframe_el.contentWindow.scrollTo(0, $top);
 						}
 						
-						$link = $iframe_el.contentDocument.createElement('a');
-						$link.textContent = 'next';
-						$link.target = '_top';
-						if($ebook_spine === undefined) {
-							$ebook_spine = 0;
-						}
-						$link.href = '#ebook/' + $ebook_id.replace('@', '\\@') + '@' + ($ebook_spine + 1);
-						
-						$iframe_el.contentDocument.body.appendChild($link);
+						$ebook.prev_next($spine, function($prev, $next) {
+							$ebook_el.querySelector('a[rel=prev]').href = ($prev === null) ? '#' : '#ebook/' + $ebook_id.replace('@', '\\@', 'g') + '@' + $prev.replace('@', '\\@', 'g');
+							$ebook_el.querySelector('a[rel=next]').href = ($next === null) ? '#' : '#ebook/' + $ebook_id.replace('@', '\\@', 'g') + '@' + $next.replace('@', '\\@', 'g');
+						});
 					});
 				});
 				
