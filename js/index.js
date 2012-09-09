@@ -130,7 +130,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		};
 		
-		if(hash_change.ebook.$ebook_spine !== $ebook_spine) {
+		if(
+			hash_change.ebook.$ebook_id !== $ebook_id || 
+			hash_change.ebook.$ebook_spine !== $ebook_spine
+		) {
 			/**
 			 * seamless "polyfill" 
 			 * @see https://bugzilla.mozilla.org/show_bug.cgi?id=80713
@@ -146,6 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			$iframe_el.contentDocument.close();
 			
 			$ebook.spine($ebook_spine, function($html, $spine) {
+				hash_change.ebook.$ebook_id    = $ebook_id;
 				hash_change.ebook.$ebook_spine = $ebook_spine;
 				
 				/** seamless "polyfill" **/
