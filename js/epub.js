@@ -59,7 +59,16 @@
 							$item_id = $item.getAttribute('id'), 
 							$itemref = $xmldoc.querySelector('spine itemref[idref="' + $item_id + '"]'), 
 							$prev_itemref = $itemref.previousElementSibling, 
-							$next_itemref = $itemref.nextElementSibling, 
+							$next_itemref = $itemref.nextElementSibling;
+						
+						while($prev_itemref !== null && $prev_itemref.getAttribute('linear') === 'no') {
+							$prev_itemref = $prev_itemref.previousElementSibling;
+						}
+						while($next_itemref !== null && $next_itemref.getAttribute('linear') === 'no') {
+							$next_itemref = $next_itemref.nextElementSibling;
+						}
+						
+						var 
 							$prev_id = $prev_itemref === null ? null : $prev_itemref.getAttribute('idref'), 
 							$next_id = $next_itemref === null ? null : $next_itemref.getAttribute('idref'), 
 							$prev_item = $prev_id === null ? null : $xmldoc.querySelector('manifest item[id="' + $prev_id + '"]'), 
