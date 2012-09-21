@@ -96,7 +96,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 			
 			Array.prototype.forEach.call(document.querySelectorAll('a[data-prefix]'), function($el) {
-				$el.href = '#' + $el.dataset.prefix + '/' + $ebook_id;
+				if($ebook_id === undefined) {
+					$el.href = '#' + $el.dataset.prefix;
+				}
+				else {
+					$el.href = '#' + $el.dataset.prefix + '/' + $ebook_id;
+				}
 			});
 			
 			if($ebook_id !== undefined && hash_change[$prefix] !== undefined) {

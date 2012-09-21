@@ -99,6 +99,18 @@ body > div {
 		left: 0%;
 		z-index: 0;
 		
+		header {
+			a {
+				float: right;
+				line-height: @headerh;
+				margin: 0 1rem;
+				
+				&[href="#ebook"] {
+					display: none;
+				}
+			}
+		}
+		
 		.content {
 			ul {
 				list-style: none;
@@ -220,6 +232,7 @@ body > div {
 		
 		& > div.content {
 			bottom: 0;
+			width: ~`"calc(100% - @{panebackw})"`;
 		}
 		
 		&.toc {
