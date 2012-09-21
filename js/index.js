@@ -257,10 +257,26 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 	
-	document.getElementById('add_ebook').addEventListener('submit', function($e) {
+	document.getElementById('add_ebook_input').addEventListener('submit', function($e) {
 		$e.preventDefault();
 		var $file = this.querySelector('input[type=file]').files[0];
 		$wr.library().add($file);
+	});
+	
+	document.getElementById('add_ebook_internet').addEventListener('submit', function($e) {
+		$e.preventDefault();
+		var 
+			$url = this.querySelector('input[type=url]').value, 
+			$xhr = new XMLHttpRequest();
+		
+		$xhr.open('GET', $url);
+		$xhr.responseType = 'blob';
+		$xhr.onreadystatechange = function($event) {
+			if(this.readyState === 4) {
+				$wr.library().add(this.response);
+			}
+		}
+		$xhr.send();
 	});
 	
 	window.addEventListener('hashchange', hash_change);

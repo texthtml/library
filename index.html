@@ -54,10 +54,19 @@
 			</header>
 			
 			<div class="content">
-				<form id=add_ebook action="#">
+				<form id="add_ebook_input" action="#">
+					<h2>Upload file</h2>
 					<p>
-						<input type=file />
-						<input type=submit />
+						<input type="file" accept="application/epub+zip"/>
+						<input type="submit" />
+					</p>
+				</form>
+					
+				<form id="add_ebook_internet" action="#">
+					<h2>Download file from the internet</h2>
+					<p>
+						<input type="url"/>
+						<input type="submit" />
 					</p>
 				</form>
 			</div>
