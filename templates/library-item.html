@@ -1,0 +1,24 @@
+<li id="{{:identifier.value}}" class="ebook {{:type}}" xml:lang="{{:language[0].value}}" tabindex="{{:#index+1}}">
+	<div class="search-content">
+		{{for title}}
+			{{>value.toLowerCase()}}
+		{{/for}}
+		{{for creator}}
+			{{>value.toLowerCase()}}
+		{{/for}}
+		{{for series}}
+			{{>value.toLowerCase()}}
+		{{/for}}
+		{{for series_index}}
+			{{>value.toLowerCase()}}
+		{{/for}}
+	</div>
+	<button name="delete">delete</button>
+	{{if series[0]}}<span class="series">{{>series[0].value}} − </span>{{/if}}
+	{{if series_index[0]}}<span class="series_index">{{>series_index[0].value}} − </span>{{/if}}
+	<span class="title">{{>title[0].value}}</span>
+	by
+	{{for creator}}{{if #index > 0}}, {{/if}}
+	<span class="creator">{{>value}}</span>{{/for}}
+	<a href="#ebook/{{:identifier.value.replace('@', '@@', 'g')}}">read</a>
+</li>

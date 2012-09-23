@@ -213,10 +213,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	hash_change.ebook.$ebook_spine = null;
 	
-	jsviews.templates({
-		libraryItem: document.getElementById('library-item').innerHTML
-	});
-	
 	var render_ebooks = function($ebooks) {
 		var $ebooks = $ebooks.sort(function($e1, $e2) {
 			var 
@@ -238,12 +234,14 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		$filter_el.value = '';
 		
-		document.getElementById('library-list').innerHTML = jsviews.render.libraryItem($ebooks);
-		
-		if(render_ebooks.$focus !== undefined) {
-			document.getElementById(render_ebooks.$focus).focus();
-			delete render_ebooks.$focus;
-		}
+		render_template('library-item', $ebooks, function($html) {
+			document.getElementById('library-list').innerHTML = $html;
+			
+			if(render_ebooks.$focus !== undefined) {
+				document.getElementById(render_ebooks.$focus).focus();
+				delete render_ebooks.$focus;
+			}
+		});
 	};
 	
 	$wr.library().addEventListener('changed', function($event) {
@@ -284,8 +282,60 @@ document.addEventListener('DOMContentLoaded', function() {
 		$xhr.send();
 	});
 	
+	$toc_el.querySelector('.content').addEventListener('click', function($evt) {
+		if($evt.target.nodeName === 'A') {
+			$evt.preventDefault();
+			window.location.hash = ebook_link_to_wr(
+				$ebook_el.dataset.prefix, 
+				$toc_el.dataset.ebook_id, 
+				$evt.target.getAttribute('href')
+			);
+		}
+	});
+	
+	document.querySelector('a[href=\'#fullscreen\']').addEventListener('click', function($event) {
+		$event.preventDefault();
+		
+		var $ebook = $ebook_el.querySelector('.content');
+		if ($ebook.requestFullScreen) {
+			$ebook.requestFullScreen();
+		}
+		else if($ebook.mozRequestFullScreen) {
+			$ebook.mozRequestFullScreen();
+		}
+		else if($ebook.webkitRequestFullScreen) {
+			$ebook.webkitRequestFullScreen();
+		}
+	});
+	
 	window.addEventListener('hashchange', hash_change);
 	$wr.addEventListener('initied', hash_change);
 	
 	$wr.init();
 });
+
+var render_template = function($template_name, $data, $callback) {
+	if(jsviews.render[$template_name] === undefined) {
+		var 
+			$xhr = new XMLHttpRequest();
+		
+		$xhr.open('GET', '/templates/' + $template_name + '.html');
+		
+		$xhr.onreadystatechange = function() {
+			if(this.readyState === 4) {
+				var 
+					$template_def = {};
+				
+				$template_def[$template_name] = this.response;
+				jsviews.templates($template_def);
+				
+				$callback(jsviews.render[$template_name]($data));
+			}
+		};
+		
+		$xhr.send();
+	}
+	else {
+		$callback(jsviews.render[$template_name]($data));
+	}
+};
