@@ -58,8 +58,8 @@
 							$item = $xmldoc.querySelector('manifest item[href="' + $itemhref + '"]'), 
 							$item_id = $item.getAttribute('id'), 
 							$itemref = $xmldoc.querySelector('spine itemref[idref="' + $item_id + '"]'), 
-							$prev_itemref = $itemref.previousElementSibling, 
-							$next_itemref = $itemref.nextElementSibling;
+							$prev_itemref = $itemref === null ? null : $itemref.previousElementSibling, 
+							$next_itemref = $itemref === null ? null : $itemref.nextElementSibling;
 						
 						while($prev_itemref !== null && $prev_itemref.getAttribute('linear') === 'no') {
 							$prev_itemref = $prev_itemref.previousElementSibling;
