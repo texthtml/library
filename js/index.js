@@ -12,20 +12,20 @@ document.addEventListener('DOMContentLoaded', function() {
 		$el.id = 'x-' + $el.id;
 	});
 	
-	document.querySelector('a[href=\'#fullscreen\']').addEventListener('click', function($event) {
-		$event.preventDefault();
-		
-		var $ebook = $ebook_el.querySelector('.content');
-		if ($ebook.requestFullScreen) {
-			$ebook.requestFullScreen();
+	jsviews.helpers({
+		nodelist_to_array: function($nodelist) {
+			var 
+				$array = [];
+			
+			if($nodelist !== null) {
+				for(var $i = 0; $i < $nodelist.length; $i++) {
+					$array.push($nodelist[$i]);
+				}
+			}
+			
+			return $array;
 		}
-		else if($ebook.mozRequestFullScreen) {
-			$ebook.mozRequestFullScreen();
-		}
-		else if($ebook.webkitRequestFullScreen) {
-			$ebook.webkitRequestFullScreen();
-		}
-	});
+	}); 
 	
 	var $wr = Object.create(WR);
 				
@@ -122,6 +122,28 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 	
 	hash_change.toc = function($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta) {
+		if(hash_change.toc.$ebook_id !== $ebook_id) {
+			hash_change.toc.$ebook_id = $ebook_id;
+			$ebook.toc(function($html) {
+				$toc_el.querySelector('.content').innerHTML = $html;
+				$toc_el.dataset.ebook_id = $ebook_id;
+			});
+		}
+	};
+	
+	var ebook_link_to_wr = function($prefix, $ebook_id, $href) {
+		var 
+			$last_href;
+		
+		do {
+			$last_href = $href;
+			$href = $href.replace(/[^\/]*\/\.\.\//g, '');
+		} while($last_href !== $href);
+		
+		$href = $href.replace('@', '\\@', 'g');
+		$href = $href.replace(/#(.*)/, '@[id="$1"]', 'g');
+		
+		return $prefix + '/' + $ebook_id + '@' + $href;
 	};
 	
 	hash_change.ebook = function($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta) {
@@ -187,20 +209,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					$link.addEventListener('click', function($event) {
 						if(this.nodeName === 'A') {
 							$event.preventDefault();
-							
 							var 
-								$href = $spine.slice(0, $spine.lastIndexOf('/') + 1) + this.getAttribute('href'), 
-								$last_href;
+								$href = $spine.slice(0, $spine.lastIndexOf('/') + 1) + this.getAttribute('href');
 							
-							do {
-								$last_href = $href;
-								$href = $href.replace(/[^\/]*\/\.\.\//g, '');
-							} while($last_href !== $href);
-							
-							$href = $href.replace('@', '\\@', 'g');
-							$href = $href.replace('#', '@#', 'g');
-							
-							window.location.hash = $ebook_el.dataset.prefix + '/' + $ebook_id + '@' + $href;
+							window.location.hash = ebook_link_to_wr($ebook_el.dataset.prefix, $ebook_id, $href);
 						}
 					});
 				});

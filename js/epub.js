@@ -3,6 +3,26 @@
 	
 	var EPub = (function() {
 		
+		jsviews.helpers({
+			epub_navuri: function($navPoint) {
+				return $navPoint.querySelector('content').getAttribute('src');
+			}
+		});
+		
+		jsviews.tags({
+			epub_navPoints: function($data) {
+				var $navPoints = [];
+				
+				for(var $i = 0; $i < $data.children.length; $i++) {
+					if($data.children[$i].tagName === 'navPoint') {
+						$navPoints.push($data.children[$i]);
+					}
+				}
+				
+				return this.renderContent($navPoints, undefined, undefined, undefined, true);
+			}
+		});
+		
 		var 
 			render_spine = function($file, $folder, $callback, $href) {
 				var 
@@ -48,9 +68,32 @@
 				$file.all('link[href],image,img[src]', function($elements) {
 					fct.call(this, $elements.iterator());
 				}.bind(this));
+			}, 
+			nav_to_html = function($navdoc, $callback) {
+				render_template('epub-toc-item', undefined, function() {
+					render_template('epub-toc', $navdoc.documentElement, function($html) {
+						$callback($html);
+					});
+				});
 			};
 		
 		return {
+			toc: function($callback) {
+				this.rootfile(function($rootfile) {
+					$rootfile.one('spine[toc]', function($spine) {
+						$rootfile.one('[id="' + $spine.getAttribute('toc') + '"]', function($item) {
+							this.rootfile_dir(function($rootfile_dir) {
+								this.file($rootfile_dir + $item.getAttribute('href'), function($file) {
+									$file.xmldoc(function($xmldoc) {
+										nav_to_html($xmldoc, $callback);
+									});
+								});
+							}.bind(this))
+						}.bind(this));
+					}.bind(this));
+				}.bind(this));
+			}, 
+			
 			prev_next: function($itemhref, $callback) {
 				this.rootfile(function($rootfile) {
 					$rootfile.xmldoc(function($xmldoc) {
