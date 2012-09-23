@@ -1,0 +1,10 @@
+<li>
+	<a href="{{:~epub_navuri(#data)}}">{{>querySelector('navLabel text').textContent}}</a>
+	{{epub_navPoints #data}}
+		{{if length}}
+		<nav>
+			<ol>{{for #data tmpl="epub-toc-item"/}}</ol>
+		</nav>
+		{{/if}}
+	{{/epub_navPoints}}
+</li>

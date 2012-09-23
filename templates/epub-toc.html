@@ -1,0 +1,18 @@
+{{for querySelector('docTitle text')}}
+<hgroup>
+	<h2>{{>textContent}}</h2>
+	{{for ~nodelist_to_array(ownerDocument.querySelector('docAuthor text'))}}
+	<h3>by {{>textContent}}</h3>
+	{{/for}}
+</hgroup>
+{{/for}}
+
+{{for ~nodelist_to_array(querySelectorAll('navMap,navList,pageList'))}}
+	{{epub_navPoints #data}}
+		{{if length}}
+		<nav>
+			<ol>{{for #data tmpl="epub-toc-item"/}}</ol>
+		</nav>
+		{{/if}}
+	{{/epub_navPoints}}
+{{/for}}
