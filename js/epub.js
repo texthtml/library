@@ -115,7 +115,7 @@
 			item: function($id) {
 				this.rootfile(function($rootfile) {
 					 
-				}).bind(this);
+				}.bind(this));
 			}, 
 			
 			itemrefs: function($callback) {
