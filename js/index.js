@@ -331,7 +331,7 @@ var render_template = function($template_name, $data, $callback) {
 		var 
 			$xhr = new XMLHttpRequest();
 		
-		$xhr.open('GET', '../templates/' + $template_name + '.html');
+		$xhr.open('GET', 'templates/' + $template_name + '.html');
 		
 		$xhr.onreadystatechange = function() {
 			if(this.readyState === 4) {
