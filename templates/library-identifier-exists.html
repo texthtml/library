@@ -1,0 +1,11 @@
+<p>An EBook with the same identifier already exists:</p>
+
+{{>title[0].value}}{{for creator}}{{if #index > 0}}, {{else}} by {{/if}}{{>value}}{{/for}}
+
+<ul>
+	<li><button id="identifier-exists-new">Add a new EBook</button></li>
+	<li><button id="identifier-exists-update">Update this EBook</button></li>
+	<li><button id="identifier-exists-update-other">Update another EBook</button></li>
+	<hr/>
+	<li><button id="identifier-exists-cancel">Cancel</button></li>
+</ul>

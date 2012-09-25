@@ -3,41 +3,7 @@
 		
 	var Library = (function() {
 		
-		var 
-			$db, 
-			$ebook, 
-			$ebook_identifier, 
-			store = function($identifier, $type, $metadata, $blob, $ebook) {
-				var 
-					$transaction = $db.transaction(['metadata', 'files'], 'readwrite'), 
-					$ebooks      = [];
-				
-				$metadata.identifier.value = $identifier;
-				$metadata.type = $type;
-				
-				$transaction.addEventListener('complete', function($event) {
-					this.trigger('added', {
-						$identifier: $identifier, 
-						$metadata  : $metadata, 
-						$ebook     : $ebook 
-					});
-					
-					this.trigger('changed', {
-						$ebooks: $ebooks
-					});
-				}.bind(this));
-				
-				$transaction.objectStore('metadata').put($metadata, $identifier);
-				$transaction.objectStore('files').put($blob, $identifier);
-				$transaction.objectStore('metadata').openCursor().addEventListener('success', function($event) {
-					var $cursor = $event.target.result;
-					
-					if($cursor !== null && $cursor !== undefined) {
-						$ebooks.push($cursor.value);
-						$cursor.continue();
-					}
-				});
-			};
+		var $db;
 		
 		return {
 			init: function() {
@@ -76,6 +42,49 @@
 				});
 			}, 
 			
+			identifiers: function($callback) {
+				var 
+					$identifiers = [], 
+					$transaction = $db.transaction('metadata');
+				
+				$transaction.addEventListener('complete', function($event) {
+					$callback($identifiers);
+				});
+				
+				$transaction.objectStore('metadata').openCursor().addEventListener('success', function($event) {
+					var $cursor = $event.target.result;
+					
+					if($cursor !== null && $cursor !== undefined) {
+						$identifiers.push($cursor.key);
+						$cursor.continue();
+					}
+				});
+			}, 
+			
+			list: function($callback, $hash_object) {
+				var 
+					$ebooks = $hash_object === true ? {} : [], 
+					$transaction = $db.transaction('metadata');
+				
+				$transaction.addEventListener('complete', function($event) {
+					$callback($ebooks);
+				});
+				
+				$transaction.objectStore('metadata').openCursor().addEventListener('success', function($event) {
+					var $cursor = $event.target.result;
+					
+					if($cursor !== null && $cursor !== undefined) {
+						if($hash_object) {
+							$ebooks[$cursor.key] = $cursor.value;
+						}
+						else {
+							$ebooks.push($cursor.value);
+						}
+						$cursor.continue();
+					}
+				});
+			}, 
+			
 			delete: function($identifier) {
 				var 
 					$transaction = $db.transaction(['metadata', 'files'], "readwrite"), 
@@ -103,58 +112,71 @@
 				});
 			}, 
 			
-			add: function($file) {
+			save: function($identifier, $metadata, $blob) {
 				this.trigger('adding');
 				
-				var $handler = $scope.WR.handler($file.type);
+				var 
+					$transaction = $db.transaction(['metadata', 'files'], 'readwrite'), 
+					$ebooks      = [];
 				
-				if($handler !== undefined) {
-					var $ebook = $handler.factory($file);
+				$metadata.identifier.value = $identifier;
+				$metadata.type = $blob.type;
+				
+				$transaction.addEventListener('complete', function($event) {
+					this.trigger('added', {
+						$identifier: $identifier, 
+						$metadata  : $metadata
+					});
 					
-					$ebook.identifier(function($identifier) {
-						$ebook.metadata(function($metadata) {
-							store.call(this, $identifier, $file.type, $metadata, $file, $ebook);
-						}.bind(this));
-					}.bind(this));
-				}
-				else {
-					console.error($file.type, 'not supported');
-				}
+					this.trigger('changed', {
+						$ebooks: $ebooks
+					});
+				}.bind(this));
+				
+				$transaction.objectStore('metadata').put($metadata, $identifier);
+				$transaction.objectStore('files').put($blob, $identifier);
+				$transaction.objectStore('metadata').openCursor().addEventListener('success', function($event) {
+					var $cursor = $event.target.result;
+					
+					if($cursor !== null && $cursor !== undefined) {
+						$ebooks.push($cursor.value);
+						$cursor.continue();
+					}
+				});
 			}, 
 			
 			load: function($identifier, $callback) {
-				if($ebook_identifier === $identifier) {
-					$callback($ebook);
-				}
-				else {
-					var 
-						$metadata, 
-						$blob, 
-						complete = function() {
-							if($metadata !== undefined && $blob !== undefined) {
-								var 
-									$handler = WR.handler($metadata.type);
-								
-								if($handler !== undefined) {
-									$ebook_identifier = $identifier;
-									$ebook = $handler.factory($blob);
-									$callback($ebook);
-								}
+				var 
+					$metadata, 
+					$blob, 
+					complete = function() {
+						if($metadata !== undefined && $blob !== undefined) {
+							var 
+								$handler = WR.handler($metadata.type);
+							
+							if($handler !== undefined) {
+								$callback($handler.factory($blob));
 							}
-						};
-					
-					window.$db = $db;
-					
-					var $transaction = $db.transaction(['metadata', 'files'], 'readonly');
-					$transaction.objectStore('metadata').get($identifier).addEventListener('success', function($event) {
-						$metadata = $event.target.result;
-						complete();
-					});
-					$transaction.objectStore('files').get($identifier).addEventListener('success', function($event) {
-						$blob = $event.target.result;
-						complete();
-					});
-				}
+						}
+					};
+				
+				var $transaction = $db.transaction(['metadata', 'files'], 'readonly');
+				$transaction.objectStore('metadata').get($identifier).addEventListener('success', function($event) {
+					$metadata = $event.target.result;
+					complete();
+				});
+				$transaction.objectStore('files').get($identifier).addEventListener('success', function($event) {
+					$blob = $event.target.result;
+					complete();
+				});
+			}, 
+			
+			metadata: function($identifier, $callback) {
+				var $transaction = $db.transaction(['metadata', 'files'], 'readonly');
+				
+				$transaction.objectStore('metadata').get($identifier).addEventListener('success', function($event) {
+					$callback($event.target.result);
+				});
 			}, 
 			
 			addEventListener: Trigger.addEventListener, 
@@ -195,6 +217,14 @@
 			
 			handler: function($mime) {
 				return $ebook_handlers[$mime];
+			}, 
+			
+			build: function($file) {
+				var $handler = $scope.WR.handler($file.type);
+				
+				if($handler !== undefined) {
+					return $handler.factory($file);
+				}
 			}, 
 			
 			library: function() {

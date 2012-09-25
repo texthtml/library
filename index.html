@@ -48,24 +48,24 @@
 			<a class="back" href="#library" data-prefix="library">Back</a>
 		</div>
 		
-		<div class="pane" id="add" data-prefix="add">
+		<div class="pane" id="import" data-prefix="import">
 			<header>
-				<h1>Add EBook</h1>
+				<h1>Import EBook</h1>
 			</header>
 			
 			<div class="content">
-				<form id="add_ebook_input" action="#">
+				<form id="import_ebook_input" action="#">
 					<h2>Upload file</h2>
 					<p>
-						<input type="file" accept="application/epub+zip"/>
+						<input required type="file" accept="application/epub+zip"/>
 						<input type="submit" />
 					</p>
 				</form>
 					
-				<form id="add_ebook_internet" action="#">
+				<form id="import_ebook_internet" action="#">
 					<h2>Download file from the internet</h2>
 					<p>
-						<input type="url"/>
+						<input required type="url"/>
 						<input type="submit"/>
 					</p>
 				</form>
@@ -165,7 +165,7 @@
 					<ul>
 						<li><a data-prefix="bookmarks" href="#bookmarks">Bookmarks</a></li>
 						<li><a data-prefix="settings"  href="#settings">Settings</a></li>
-						<li><a data-prefix="add"       href="#add">Add EBook</a></li>
+						<li><a data-prefix="import"    href="#import">Import EBook</a></li>
 						<li><a data-prefix="tos"       href="#tos">
 							<abbr title="Terms of Service">ToS</abbr></a>
 						</li>
@@ -173,6 +173,8 @@
 				</nav>
 			</footer>
 		</div>
+		
+		<div id="overlay" class="overlay"></div>
 		
 		<script src="js/vendor/jsrender/jsrender.js"></script>
 		

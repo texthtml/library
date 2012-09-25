@@ -1,0 +1,15 @@
+<form id="library-select-identifier">
+	<p>Select the EBook you want to update</p>
+	
+	<input autofocus type="search" name="filter" id="library-select-identifier-filter" placeholder="filter EBook list"></input>
+	<select required name="identifier" id="library-select-identifiers">
+		<option value="" data-nomatch="No match" data-label="Select the EBook to update">Select the EBook to update</option>
+		{{each #data}}
+			<option value="{{attr:key}}" data-label="{{attr:value.title[0].value}}{{for value.creator}}{{if #index > 0}}, {{else}} by {{/if}}{{attr:value}}{{/for}}" >{{>value.title[0].value}}{{for value.creator}}{{if #index > 0}}, {{else}} by {{/if}}{{>value}}{{/for}}</option>
+		{{/each}}
+	</select>
+	<input type="submit" value="Update EBook"/>
+	
+	<hr/>
+	<button id="library-resolve-identifier-cancel">Cancel EBook import</button>
+</form>
