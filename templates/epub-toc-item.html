@@ -1,5 +1,5 @@
 <li>
-	<a href="{{:~epub_navuri(#data)}}">{{>querySelector('navLabel text').textContent}}</a>
+	<a href="{{attr:~epub_navuri(#data)}}">{{>querySelector('navLabel text').textContent}}</a>
 	{{epub_navPoints #data}}
 		{{if length}}
 		<nav>

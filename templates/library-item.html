@@ -1,4 +1,4 @@
-<li id="{{:identifier.value}}" class="ebook {{:type}}" xml:lang="{{:language[0].value}}" tabindex="{{:#index+1}}">
+<li id="{{attr:identifier.value}}" class="ebook {{attr:type}}" xml:lang="{{attr:language[0].value}}" tabindex="{{attr:#index+1}}">
 	<div class="search-content">
 		{{for title}}
 			{{>value.toLowerCase()}}
@@ -17,8 +17,7 @@
 	{{if series[0]}}<span class="series">{{>series[0].value}} − </span>{{/if}}
 	{{if series_index[0]}}<span class="series_index">{{>series_index[0].value}} − </span>{{/if}}
 	<span class="title">{{>title[0].value}}</span>
-	by
-	{{for creator}}{{if #index > 0}}, {{/if}}
+	{{for creator}}{{if #index > 0}}, {{else}} by {{/if}}
 	<span class="creator">{{>value}}</span>{{/for}}
-	<a href="#ebook/{{:identifier.value.replace('@', '@@', 'g')}}">read</a>
+	<a href="#ebook/{{attr:identifier.value.replace('@', '@@', 'g')}}">read</a>
 </li>

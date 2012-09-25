@@ -27,6 +27,12 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}); 
 	
+	jsviews.converters({
+		attr: function($text) {
+			return $text; // @TODO
+		}
+	});
+	
 	var $wr = Object.create(WR);
 				
 	var split_ebook_hash = (function() {
