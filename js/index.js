@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	jsviews.converters({
 		attr: function($text) {
-			return $text; // @TODO
+			return $text !== undefined ? String($text).replace('"', '&quot;').replace('&', '&amp;') : '';
 		}
 	});
 	
