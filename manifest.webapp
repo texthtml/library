@@ -1,0 +1,10 @@
+ {
+  "name": "Web Reader",
+  "description": "Web Reader is an EBook reader for mobile devices.",
+  "launch_path": "/",
+  "developer": {
+    "name": "Mathieu Rochette",
+    "url": "https://mathieu.rochette.cc/"
+  },
+  "default_locale": "en"
+}
