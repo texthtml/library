@@ -6,5 +6,8 @@
     "name": "Mathieu Rochette",
     "url": "https://mathieu.rochette.cc/"
   },
+  "icons": {
+    "128": "/images/web-reader.png"
+  },
   "default_locale": "en"
 }
