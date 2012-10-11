@@ -553,25 +553,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				document.documentElement.dataset.installed = true;
 				document.documentElement.dataset.uptodate = true;
 				
-				render_template('installation-success', this, function($html) {
-					var $content = set_overlay($html);
-					
-					$content.querySelector('button').addEventListener(
-						'click', 
-						close_overlay
-					);
-				});
+				alert('Web Reader install ended successfully!');
 			});
 			
 			$installation.addEventListener('error', function($event) {
-				render_template('installation-error', this, function($html) {
-					var $content = set_overlay($html);
-					
-					$content.querySelector('button').addEventListener(
-						'click', 
-						close_overlay
-					);
-				});
+				alert('installation-error' + this.name);
 			});
 			
 			open_overlay('Installation in progress...');
