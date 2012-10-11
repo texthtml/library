@@ -286,3 +286,16 @@ body > div {
 		}
 	}
 }
+
+button#update, 
+button#install {
+	display: none;
+}
+
+html.apps[data-uptodate=false] button#update,  
+html.apps[data-installed=false] button#install {
+	display: block;
+	width: 100%;
+	border: 0;
+	line-height: 3rem;
+}

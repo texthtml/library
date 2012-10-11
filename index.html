@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
-<!--[if lt IE 9]> <html class="oldie"> <![endif]-->
-<!--[if gt IE 8]><!--> <html manifest="online.appcache"> <!--<![endif]-->
+<html data-installed="false" data-uptodate="false" manifest="online.appcache">
 	<head>
 		<meta charset="utf-8" />
 		
@@ -154,10 +152,13 @@
 			<div class="content">
 				<form action="#" id="library-filter" accept-charset="utf-8">
 					<p>
-						<input autofocus type="search" name="filter" placeholder="filter library" tabindex="1"/>
+						<input autofocuss type="search" name="filter" placeholder="filter library" tabindex="1"/>
 					</p>
 				</form>
 				<ul id="library-list"></ul>
+				
+				<button id="install" class="install">Install app</button>
+				<button id="update"  class="install">Update app</button>
 			</div>
 			
 			<footer>

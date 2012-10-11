@@ -496,6 +496,116 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	};
 	
+	
+	var $manifest_url = window.location.protocol + '//' + window.location.hostname + '/manifest.webapp';
+	
+	var $apps_api = function() {
+		var $apps_api;
+		
+		return function() {
+			if($apps_api === undefined) {
+				return Modernizr._domPrefixes.reduce(function($apps, $prefix) {
+					return $apps || window.navigator[$prefix + 'Apps'] || window.navigator[$prefix.toLowerCase() + 'Apps'];
+				}, navigator.apps) || null;
+			}
+			
+			return $apps_api;
+		}
+	} ();
+	
+	var get_app = function() {
+		var $app;
+		
+		return function($callback) {
+			if($app !== undefined) {
+				return $app;
+			}
+			if(Modernizr.apps === true) {
+				var 
+					$installed = $apps_api().getInstalled();
+				
+				$app = null;
+				
+				$installed.addEventListener('success', function($event) {
+					$app = this.result.filter(function($app) {
+						return $app.manifestURL === $manifest_url;
+					});
+					
+					if($app.length === 0) {
+						$app = null;
+					}
+					else {
+						$app = $app[0];
+					}
+					
+					$callback($app);
+				});
+			}
+		}
+	} ();
+	
+	var install = function() {
+		if(Modernizr.apps === true) {
+			var 
+				$installation = $apps_api().install($manifest_url);
+			
+			$installation.addEventListener('success', function($event) {
+				document.documentElement.dataset.installed = true;
+				document.documentElement.dataset.uptodate = true;
+				
+				render_template('installation-success', this, function($html) {
+					var $content = set_overlay($html);
+					
+					$content.querySelector('button').addEventListener(
+						'click', 
+						close_overlay
+					);
+				});
+			});
+			
+			$installation.addEventListener('error', function($event) {
+				render_template('installation-error', this, function($html) {
+					var $content = set_overlay($html);
+					
+					$content.querySelector('button').addEventListener(
+						'click', 
+						close_overlay
+					);
+				});
+			});
+			
+			open_overlay('Installation in progress...');
+		}
+	};
+	
+	Modernizr.addTest('apps', function() {
+		return window.navigator.mozApps;
+	});
+	
+	if(Modernizr.apps === true) {
+		get_app(function($app) {
+			document.documentElement.dataset.installed = $app !== null;
+			
+			if($app !== null) {
+				var 
+					$manifest = $app.manifest, 
+					$xhr = new XMLHttpRequest();
+				
+				window.$app = $app;
+				
+				$xhr.open('GET', $app.manifestURL);
+				$xhr.responseType = 'json';
+				$xhr.onreadystatechange = function($event) {
+					if(this.readyState === 4) {
+						document.documentElement.dataset.uptodate =  this.response.version === $app.manifest.version;
+					}
+				}
+				$xhr.send();
+			}
+		});
+	}
+	
+	
 	$wr.library().addEventListener('changed', function($event) {
 		render_ebooks($event.$ebooks);
 	});
