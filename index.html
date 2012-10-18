@@ -13,22 +13,13 @@
 		<title>web reader</title>
 	</head>
 	<body>
-		
-<!--
-		<section id="toc" data-id-prefix="toc" class="toc">
-			<a href="#library" data-id-prefix="toc" class="nav open"><h1>Table of Contents</h1></h1>
-			<a href="#ebook" data-id-prefix="ebook" class="nav hide">hide toc</a>
-			<div class="content">
-			</div>
-		</section>
--->
 		<div class="pane" id="bookmarks"  data-prefix="bookmarks">
 			<header>
 				<h1>Bookmarks</h1>
-				<p>not implemented</p>
 			</header>
 			
 			<div class="content">
+				<p>not implemented</p>
 			</div>
 			
 			<a class="back" href="#library" data-prefix="library">Back</a>
@@ -37,10 +28,10 @@
 		<div class="pane" id="settings" data-prefix="settings">
 			<header>
 				<h1>Settings</h1>
-				<p>not implemented</p>
 			</header>
 			
 			<div class="content">
+				<p>not implemented</p>
 			</div>
 			
 			<a class="back" href="#library" data-prefix="library">Back</a>
@@ -72,25 +63,13 @@
 			<a class="back" href="#library" data-prefix="library">Back</a>
 		</div>
 		
-		<div class="pane" id="tos" data-prefix="tos">
-			<header>
-				<h1>Terms of Service</h1>
-				<p>not implemented</p>
-			</header>
-			
-			<div class="content">
-			</div>
-			
-			<a class="back" href="#library" data-prefix="library">Back</a>
-		</div>
-		
 		<div class="ebook pane bookmarks" data-prefix="ebook-bookmarks" id="ebook-bookmarks">
 			<header>
 				<h1>Bookmarks</h1>
-				<p>not implemented</p>
 			</header>
 			
 			<div class="content">
+				<p>not implemented</p>
 			</div>
 			
 			<a class="back" href="#ebook" data-prefix="ebook">Back</a>
@@ -99,10 +78,10 @@
 		<div class="ebook pane settings"  data-prefix="ebook-settings"  id="ebook-settings">
 			<header>
 				<h1>Settings</h1>
-				<p>not implemented</p>
 			</header>
 			
 			<div class="content">
+				<p>not implemented</p>
 			</div>
 			
 			<a class="back" href="#ebook" data-prefix="ebook">Back</a>
@@ -122,6 +101,7 @@
 		<div class="ebook"                data-prefix="ebook"           id="ebook">
 			<header>
 				<a href="#library" data-prefix="library">Library</a>
+				<button id="fullscreen">Fullscreen</button>
 				<h1>EBook</h1>
 			</header>
 			
@@ -137,7 +117,6 @@
 						<li><a data-prefix="ebook-bookmarks" href="#ebook-bookmarks">Bookmarks</a></li>
 						<li><a data-prefix="ebook-settings"  href="#ebook-settings">Settings</a></li>
 						<li><a data-prefix="toc"             href="#toc"><abbr title="Table of Contents">ToC</abbr></a></li>
-						<li><a                               href="#fullscreen">Fullscreen</a></li>
 					</ul>
 				</nav>
 			</footer>
@@ -167,9 +146,6 @@
 						<li><a data-prefix="bookmarks" href="#bookmarks">Bookmarks</a></li>
 						<li><a data-prefix="settings"  href="#settings">Settings</a></li>
 						<li><a data-prefix="import"    href="#import">Import EBook</a></li>
-						<li><a data-prefix="tos"       href="#tos">
-							<abbr title="Terms of Service">ToS</abbr></a>
-						</li>
 					</ul>
 				</nav>
 			</footer>

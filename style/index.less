@@ -62,6 +62,8 @@ body > div {
 		h1 {
 			margin: 0;
 			line-height: @headerh;
+			padding-left: 0.5rem;
+			float: left;
 		}
 	}
 	
@@ -83,8 +85,7 @@ body > div {
 			margin: 0;
 			li {
 				float: left;
-				display: inline-block;
-				width: 25%;
+				width: 33%;
 				line-height: 3rem;
 				text-align: center;
 				font-size: 0.8em;
@@ -104,7 +105,6 @@ body > div {
 			a {
 				float: right;
 				line-height: @headerh;
-				margin: 0 1rem;
 				
 				&[href="#ebook"] {
 					display: none;
@@ -113,6 +113,23 @@ body > div {
 		}
 		
 		.content {
+			
+			#library-filter {
+				p {
+					margin: 0;
+					
+					input[name=filter] {
+						height: 2em;
+						padding-left: 1rem;
+						border-width: 0;
+						border-bottom-width: 1px;
+						-moz-box-sizing: border-box;
+						box-sizing: border-box;
+						width: 100%;
+					}
+				}
+			}
+			
 			ul {
 				list-style: none;
 				padding: 0;
@@ -178,7 +195,12 @@ body > div {
 			a {
 				float: left;
 				line-height: @headerh;
-				margin: 0 1rem;
+			}
+			
+			button {
+				float: right;
+				line-height: @headerh;
+				border: 0;
 			}
 		}
 		
@@ -189,7 +211,6 @@ body > div {
 			display: block;
 			border: 0;
 			width: 100%;
-			min-height: ~"calc(100% - 4em)";
 		}
 		
 		a[rel] {
@@ -198,10 +219,6 @@ body > div {
 			
 			&[href="#"] {
 				display: none;
-				
-				& + iframe {
-					min-height: ~"calc(100% - 2em)";
-				}
 			}
 		}
 	}
@@ -249,6 +266,7 @@ body > div {
 		
 		& > div.content {
 			bottom: 0;
+			padding: 0 1rem;
 		}
 		
 		&.toc {

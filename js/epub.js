@@ -411,7 +411,7 @@
 		
 		data: function($callback) {
 			if(this.$data === undefined) {
-				var $reader = new FileReader(this.$blob);
+				var $reader = new FileReader();
 				
 				$reader.addEventListener('load', function($event) {
 					this.$data = $event.target.result;

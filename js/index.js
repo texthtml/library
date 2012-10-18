@@ -9,9 +9,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		$iframe_el  = $ebook_el.querySelector('iframe'), 
 		$overlay_el = document.getElementById('overlay');
 	
+	
 	Array.prototype.forEach.call(document.querySelectorAll('div[id]'), function($el) {
 		$el.id = 'x-' + $el.id;
 	});
+	
 	
 	jsviews.helpers({
 		nodelist_to_array: function($nodelist) {
@@ -46,7 +48,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 	
+	
 	var $wr = Object.create(WR);
+				
 				
 	var split_ebook_hash = (function() {
 		var split_escape = function($str, $sep, $esc) {
@@ -89,16 +93,19 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	};
 	
+	
 	var import_blob = function($blob) {
 		var $ebook = $wr.build($blob);
 		
 		if($ebook === undefined) {
-			alert('EBook format [type] is not supported'.replace('[type]', $file.type));
+			alert('EBook format [type] is not supported'.replace('[type]', $blob.type));
+			close_overlay();
 			return;
 		}
 		
 		$ebook.identifier(function($identifier) {
 			import_blob.import_ebook($ebook, $identifier);
+			close_overlay();
 		});
 	};
 	
@@ -284,6 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		);
 	};
 	
+	
 	var open_overlay = function($message) {
 		$overlay_el.innerHTML = $message || 'loading overlay content';
 		
@@ -302,25 +310,20 @@ document.addEventListener('DOMContentLoaded', function() {
 		$overlay_el.style.left = '';
 	};
 	
-	var load_ebook = function($ebook_id, $callback) {
+	
+	var ebook_link_to_wr = function($prefix, $ebook_id, $href) {
 		var 
-			$ebook_spine, 
-			$ebook_hash, 
-			$ebook_delta;
+			$last_href;
 		
-		[$ebook_id, $ebook_spine, $ebook_hash, $ebook_delta] = split_ebook_hash($ebook_id);
+		do {
+			$last_href = $href;
+			$href = $href.replace(/[^\/]*\/\.\.\//g, '');
+		} while($last_href !== $href);
 		
-		if($ebook_id !== load_ebook.$current_ebook_id) {
-			$wr.library().load($ebook_id, function($ebook) {
-				load_ebook.$current_ebook = $ebook;
-				load_ebook.$current_ebook_id = $ebook_id;
-				
-				$callback($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta);
-			});
-		}
-		else {
-			$callback(load_ebook.$current_ebook, $ebook_id, $ebook_spine, $ebook_hash);
-		}
+		$href = $href.replace('@', '\\@', 'g');
+		$href = $href.replace(/#(.*)/, '@[id="$1"]', 'g');
+		
+		return $prefix + '/' + $ebook_id + '@' + $href;
 	};
 	
 	var hash_change = function() {
@@ -344,8 +347,17 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			});
 			
-			if($ebook_id !== undefined && hash_change[$prefix] !== undefined) {
-				load_ebook($ebook_id, hash_change[$prefix]);
+			if($prefix === '') {
+				$prefix = 'library';
+			}
+			
+			if(hash_change[$prefix] !== undefined) {
+				if($ebook_id !== undefined) {
+					load_ebook($ebook_id, hash_change[$prefix]);
+				}
+				else {
+					hash_change[$prefix]();
+				}
 			}
 			
 			var $target = document.getElementById('x-'+$prefix);
@@ -353,6 +365,18 @@ document.addEventListener('DOMContentLoaded', function() {
 				$target.classList.add('target');
 			}
 		}
+	};
+	
+	hash_change.library = function() {
+	};
+	
+	hash_change.bookmarks = function() {
+	};
+	
+	hash_change.settings = function() {
+	};
+	
+	hash_change.import = function() {
 	};
 	
 	hash_change['ebook-bookmarks'] = function($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta) {
@@ -369,21 +393,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				$toc_el.dataset.ebook_id = $ebook_id;
 			});
 		}
-	};
-	
-	var ebook_link_to_wr = function($prefix, $ebook_id, $href) {
-		var 
-			$last_href;
-		
-		do {
-			$last_href = $href;
-			$href = $href.replace(/[^\/]*\/\.\.\//g, '');
-		} while($last_href !== $href);
-		
-		$href = $href.replace('@', '\\@', 'g');
-		$href = $href.replace(/#(.*)/, '@[id="$1"]', 'g');
-		
-		return $prefix + '/' + $ebook_id + '@' + $href;
 	};
 	
 	hash_change.ebook = function($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta) {
@@ -464,6 +473,27 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 	
 	hash_change.ebook.$ebook_spine = null;
+	
+	var load_ebook = function($ebook_id, $callback) {
+		var 
+			$ebook_spine, 
+			$ebook_hash, 
+			$ebook_delta;
+		
+		[$ebook_id, $ebook_spine, $ebook_hash, $ebook_delta] = split_ebook_hash($ebook_id);
+		
+		if($ebook_id !== load_ebook.$current_ebook_id) {
+			$wr.library().load($ebook_id, function($ebook) {
+				load_ebook.$current_ebook = $ebook;
+				load_ebook.$current_ebook_id = $ebook_id;
+				
+				$callback($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta);
+			});
+		}
+		else {
+			$callback(load_ebook.$current_ebook, $ebook_id, $ebook_spine, $ebook_hash);
+		}
+	};
 	
 	var render_ebooks = function($ebooks) {
 		var $ebooks = $ebooks.sort(function($e1, $e2) {
@@ -641,7 +671,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 	
-	document.querySelector('a[href=\'#fullscreen\']').addEventListener('click', function($event) {
+	document.getElementById('fullscreen').addEventListener('click', function($event) {
 		$event.preventDefault();
 		
 		var $ebook = $ebook_el.querySelector('.content');
@@ -656,8 +686,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 	
+	document.querySelector('.install').addEventListener('click', install);
+	
 	window.addEventListener('hashchange', hash_change);
 	$wr.addEventListener('initied', hash_change);
+	
 	
 	$wr.init();
 });
