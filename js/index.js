@@ -621,6 +621,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	}
 	
+	Modernizr.addTest('system-xhr', function() {
+		return (new XMLHttpRequest({mozSystem: true})).mozSystem;
+	});
 	
 	$wr.library().addEventListener('changed', function($event) {
 		render_ebooks($event.$ebooks);
@@ -648,13 +651,22 @@ document.addEventListener('DOMContentLoaded', function() {
 		$e.preventDefault();
 		var 
 			$url = this.querySelector('input[type=url]').value, 
-			$xhr = new XMLHttpRequest();
+			$xhr = new XMLHttpRequest({mozSystem: true});
+		
+		open_overlay('Getting EBook...');
 		
 		$xhr.open('GET', $url);
+		$xhr.overrideMimeType('application/epub+zip');
 		$xhr.responseType = 'blob';
 		$xhr.onreadystatechange = function($event) {
 			if(this.readyState === 4) {
-				import_blob(this.response);
+				if(this.response === null) {
+					alert('Could not load EBook');
+					close_overlay();
+				}
+				else {
+					import_blob(this.response);
+				}
 			}
 		}
 		$xhr.send();

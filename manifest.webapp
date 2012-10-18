@@ -10,9 +10,9 @@
     "url": "https://mathieu.rochette.cc/"
   },
   
-  "permissions": [
-    "systemXHR"
-  ],
+  "permissions": {
+    "systemXHR":{}
+  },
   
   "icons": {
     "128": "/images/web-reader.png"
