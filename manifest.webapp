@@ -17,7 +17,7 @@
   },
   
   "icons": {
-    "128": "<?= dirname($_SERVER['REQUEST_URI']) ?>/images/web-reader.png"
+    "128": "/images/web-reader.png"
   },
   
   "default_locale": "en"
