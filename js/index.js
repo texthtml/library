@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 	
 	
-	var $manifest_url = window.location.protocol + '//' + window.location.hostname + '/manifest.webapp';
+	var $manifest_url = window.location.protocol + '//' + window.location.hostname + window.location.pathname + 'manifest.webapp';
 	
 	var $apps_api = function() {
 		var $apps_api;
