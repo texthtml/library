@@ -607,8 +607,6 @@ document.addEventListener('DOMContentLoaded', function() {
 					$manifest = $app.manifest, 
 					$xhr = new XMLHttpRequest();
 				
-				window.$app = $app;
-				
 				$xhr.open('GET', $app.manifestURL);
 				$xhr.responseType = 'json';
 				$xhr.onreadystatechange = function($event) {
