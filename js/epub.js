@@ -135,17 +135,10 @@
 				this.rootfile_dir(function($rootfile_dir) {
 					if($spine === undefined) {
 						this.rootfile(function($rootfile) {
-							$rootfile.one('guide reference[type="cover"][href]', function($reference) {
-								if($reference !== null) {
-									fct($reference.getAttribute('href'), $rootfile_dir);
-								}
-								else {
-									$rootfile.one('spine itemref:not([linear="no"])', function($itemref) {
-										$rootfile.one('[id="' + $itemref.getAttribute('idref') + '"]', function($item) {
-											fct($item.getAttribute('href'), $rootfile_dir);
-										}.bind(this));
-									});
-								}
+							$rootfile.one('spine itemref:not([linear="no"])', function($itemref) {
+								$rootfile.one('[id="' + $itemref.getAttribute('idref') + '"]', function($item) {
+									fct($item.getAttribute('href'), $rootfile_dir);
+								}.bind(this));
 							});
 						}.bind(this));
 					}
