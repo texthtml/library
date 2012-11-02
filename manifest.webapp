@@ -1,11 +1,9 @@
-<?php
-	header('content-type: application/x-web-app-manifest+json');
-?>{
+{
   "name": "Web Reader",
   "description": "Web Reader is an EBook reader for mobile devices.",
   "version": "201210111652", 
   
-  "launch_path": "<?= dirname($_SERVER['REQUEST_URI']) ?>/",
+  "launch_path": "/",
   
   "developer": {
     "name": "Mathieu Rochette",
@@ -17,7 +15,7 @@
   },
   
   "icons": {
-    "128": "<?= dirname($_SERVER['REQUEST_URI']) ?>/images/web-reader.png"
+    "128": "/images/web-reader.png"
   },
   
   "default_locale": "en"
