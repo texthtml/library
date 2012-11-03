@@ -25,48 +25,33 @@
 		
 		var 
 			render_spine = function($file, $folder, $callback, $href) {
-				var 
-					fct = function($iterator) {
-						try {
-							var 
-								$element = $iterator.next(), 
-								$attribute_name = {
-									link: 'href', 
-									image: 'xlink:href', 
-									img: 'src'
-								}[$element.nodeName], 
-								$rel_path = $element.getAttribute($attribute_name);
-							
-							this.file($folder + $rel_path, function($file) {
-								if($file !== null) {
-									switch($element.nodeName) {
-										default: 
-											$element.setAttribute($attribute_name, URL.createObjectURL($file.$blob));
-											fct($iterator);
-									};
-								}
-								else {
-									fct($iterator);
-								}
-							});
-						}
-						catch($e) {
-							if($e instanceof StopIteration) {
-								$file.xmldoc(function($xmldoc) {
-									$callback(
-										new XMLSerializer().serializeToString($xmldoc), 
-										$href
-									);
-								}.bind(this));
-							}
-							else {
-								throw $e;
-							}
-						}
-					}.bind(this);
-					
 				$file.all('link[href],image,img[src]', function($elements) {
-					fct.call(this, $elements.iterator());
+					Utils.forEach($elements, function($element, $done) {
+						var 
+							$attribute_name = {
+								link: 'href', 
+								image: 'xlink:href', 
+								img: 'src'
+							}[$element.nodeName], 
+							$rel_path = $element.getAttribute($attribute_name);
+						
+						this.file($folder + $rel_path, function($file) {
+							if($file !== null) {
+								switch($element.nodeName) {
+									default: 
+										$element.setAttribute($attribute_name, URL.createObjectURL($file.$blob));
+								};
+							}
+							$done();
+						});
+					}.bind(this), function() {
+						$file.xmldoc(function($xmldoc) {
+							$callback(
+								new XMLSerializer().serializeToString($xmldoc), 
+								$href
+							);
+						}.bind(this));
+					}.bind(this));
 				}.bind(this));
 			}, 
 			nav_to_html = function($navdoc, $callback) {
