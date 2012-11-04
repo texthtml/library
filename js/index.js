@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		$overlay_el = document.getElementById('overlay');
 	
 	
-	Array.prototype.forEach.call(document.querySelectorAll('div[id]'), function($el) {
+	Array.prototype.forEach.call(document.querySelectorAll('body > div[id]'), function($el) {
 		$el.id = 'x-' + $el.id;
 	});
 	

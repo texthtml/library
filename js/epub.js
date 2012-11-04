@@ -139,19 +139,11 @@
 				}.bind(this));
 			}, 
 			
-			itemrefs: function($callback) {
-				if(this.$itemrefs === undefined) {
-					this.rootfile(function($rootfile) {
-						$rootfile.all('spine itemref', function($itemrefs) {
-							this.$itemrefs = $itemrefs;
-							$callback($itemrefs);
-						}.bind(this));
-					}.bind(this));
-				}
-				else {
-					$callback(this.$itemrefs);
-				}
-			}, 
+			itemrefs: Utils.cache(function($callback) {
+				this.rootfile(function($rootfile) {
+					$rootfile.all('spine itemref', $callback);
+				}.bind(this));
+			}, '$itemrefs'), 
 			
 			title: function($callback) {
 				this.metadata(function($titles) {
@@ -265,19 +257,11 @@
 				});
 			}, 
 			
-			rootfile: function($callback) {
-				if(this.$rootfile === undefined) {
-					this.rootfile_path(function($rootfile_path) {
-						this.file($rootfile_path, function($rootfile) {
-							this.$rootfile = $rootfile;
-							$callback(this.$rootfile);
-						}.bind(this));
-					}.bind(this));
-				}
-				else {
-					$callback(this.$rootfile);
-				}
-			},
+			rootfile: Utils.cache(function($callback) {
+				this.rootfile_path(function($rootfile_path) {
+					this.file($rootfile_path, $callback);
+				}.bind(this));
+			}, '$rootfile'), 
 			
 			rootfile_dir: function($callback) {
 				this.rootfile_path(function($rootfile_path) {
@@ -287,69 +271,56 @@
 					
 					$callback($rootfile_dir);
 				});
-			},
-			
-			rootfile_path: function($callback) {
-				if(this.$rootfile_path === undefined) {
-					this.container(function($container) {
-						$container.one('container rootfiles rootfile', function($rootfile) {
-							this.$rootfile_path = $rootfile === null ? null : $rootfile.getAttribute('full-path');
-							$callback(this.$rootfile_path);
-						}.bind(this));
-					}.bind(this));
-				}
-				else {
-					$callback(this.$rootfile_path);
-				}
 			}, 
+			
+			rootfile_path: Utils.cache(function($callback) {
+				this.container(function($container) {
+					$container.one('container rootfiles rootfile', function($rootfile) {
+						$callback($rootfile === null ? null : $rootfile.getAttribute('full-path'));
+					}.bind(this));
+				}.bind(this));
+			}, '$rootfile_path'), 
 			
 			container: function($callback) {
 				this.file('META-INF/container.xml', $callback);
 			}, 
 			
-			file: function($name, $callback) {
+			file: Utils.cache(function($name, $callback) {
+				$name = $name.replace('/../', '/');
+				var 
+					$request = this.reader().getFile($name);
+				
+				$request.addEventListener('success', function($event) {
+					$callback(EPubFile_factory($event.target.result));
+				}.bind(this));
+				
+				$request.addEventListener('error', function($event) {
+					$callback(null);
+				}.bind(this));
+			}, function($name) {
 				$name = $name.replace('/../', '/');
 				if(this.$files === undefined) {
 					this.$files = {};
 				}
-				if(this.$files[$name] === undefined) { 
-					var 
-						$request = this.reader().getFile($name);
-					
-					$request.addEventListener('success', function($event) {
-						this.$files[$name] = EPubFile_factory($event.target.result);
-						$callback(this.$files[$name]);
-					}.bind(this));
-					
-					$request.addEventListener('error', function($event) {
-						this.$files[$name] = null;
-						$callback(this.$files[$name]);
-					}.bind(this));
+				if(this.$files[$name] === undefined) {
+					this.$files[$name] = {};
 				}
-				else {
-					$callback(this.$files[$name]);
-				}
-			}, 
+				
+				return this.$files[$name];
+			}), 
 			
-			filenames: function($callback) {
-				if(this.$filenames === undefined) {
-					var 
-						$request = this.reader().getFilenames();
-					
-					$request.addEventListener('success', function($event) {
-						this.$filenames = $event.target.result;
-						$callback(this.$filenames);
-					}.bind(this));
-					
-					$request.addEventListener('error', function($event) {
-						this.$filenames = null;
-						$callback(this.$filenames);
-					}.bind(this));
-				}
-				else {
-					$callback(this.$filenames);
-				}
-			}, 
+			filenames: Utils.cache(function($callback) {
+				var 
+					$request = this.reader().getFilenames();
+				
+				$request.addEventListener('success', function($event) {
+					$callback($event.target.result);
+				}.bind(this));
+				
+				$request.addEventListener('error', function($event) {
+					$callback(null);
+				}.bind(this));
+			}, '$filenames'), 
 			
 			reader: function() {
 				if(this.$reader === undefined) {
@@ -361,69 +332,48 @@
 	}) ();
 	
 	var EPubFile = {
-		dataURL: function($callback) {
-			if(this.$dataURL === undefined) {
-				var $reader = new FileReader(this.$blob);
-				
-				$reader.addEventListener('load', function($event) {
-					this.$dataURL = $event.target.result;
-					$callback(this.$dataURL);
-				}.bind(this));
-				
-				$reader.addEventListener('error', function($event) {
-					this.$dataURL = null;
-					$callback(this.$dataURL);
-				}.bind(this));
-				
-				$reader.readAsDataURL(this.$blob);
-				
-			}
-			else {
-				$callback($this.$dataURL);
-			}
-		}, 
+		dataURL: Utils.cache(function($callback) {
+			var $reader = new FileReader(this.$blob);
+			
+			$reader.addEventListener('load', function($event) {
+				$callback($event.target.result);
+			}.bind(this));
+			
+			$reader.addEventListener('error', function($event) {
+				$callback(null);
+			}.bind(this));
+			
+			$reader.readAsDataURL(this.$blob);
+		}, '$dataURL'), 
 		
 		type: function() {
 			return this.$blob.type;
 		}, 
 		
-		data: function($callback) {
-			if(this.$data === undefined) {
-				var $reader = new FileReader();
-				
-				$reader.addEventListener('load', function($event) {
-					this.$data = $event.target.result;
-					$callback(this.$data);
-				}.bind(this));
-				
-				$reader.addEventListener('error', function($event) {
-					this.$data = null;
-					$callback(this.$data);
-				}.bind(this));
-				
-				$reader.readAsText(this.$blob);
-			}
-			else {
-				$callback(this.$data);
-			}
-		}, 
+		data: Utils.cache(function($callback) {
+			var $reader = new FileReader();
+			
+			$reader.addEventListener('load', function($event) {
+				$callback($event.target.result);
+			}.bind(this));
+			
+			$reader.addEventListener('error', function($event) {
+				$callback(null);
+			}.bind(this));
+			
+			$reader.readAsText(this.$blob);
+		}, '$data'), 
 		
-		xmldoc: function($callback) {
-			if(this.$xmldoc === undefined) {
-				this.data(function($xml) {
-					if($xml !== null) {
-						this.$xmldoc = new DOMParser().parseFromString($xml, "text/xml");
-					}
-					else {
-						this.$xmldoc = null;
-					}
-					$callback(this.$xmldoc);
-				}.bind(this));
-			}
-			else {
-				$callback(this.$xmldoc);
-			}
-		}, 
+		xmldoc: Utils.cache(function($callback) {
+			this.data(function($xml) {
+				if($xml !== null) {
+					$callback(new DOMParser().parseFromString($xml, "text/xml"));
+				}
+				else {
+					$callback(null);
+				}
+			}.bind(this));
+		}, '$xmldoc'), 
 		
 		one: function($selectors, $callback) {
 			this.xmldoc(function($xmldoc) {
@@ -433,7 +383,6 @@
 		
 		all: function($selectors, $callback) {
 			this.xmldoc(function($xmldoc) {
-				window.doc = $xmldoc;
 				$callback($xmldoc.querySelectorAll($selectors));
 			});
 		}, 

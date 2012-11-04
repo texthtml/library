@@ -2,6 +2,46 @@
 	"use strict";
 	
 	var Utils = {
+		cache: function($process, $name) {
+			return function() {
+				var 
+					$storage, 
+					$callback = Array.prototype.pop.call(arguments);
+				
+				if(typeof $name === 'string') {
+					if(this[$name] === undefined) {
+						this[$name] = {};
+					}
+					
+					$storage = this[$name];
+				}
+				else {
+					$storage = $name.apply(this, arguments);
+				}
+				
+				if($storage.$loaded === undefined) {
+					$storage.$loaded = false;
+					$storage.$callbacks = [$callback];
+					
+					Array.prototype.push.call(arguments, function($data) {
+						$storage.$data = $data;
+						$storage.$loaded = true;
+						
+						while($storage.$callbacks.length !== 0) {
+							$storage.$callbacks.shift()($storage.$data);
+						}
+					}.bind(this));
+					
+					$process.apply(this, arguments);
+				}
+				else if($storage.$loaded !== true) {
+					$storage.$callbacks.push($callback);
+				}
+				else {
+					$callback($storage.$data);
+				}
+			};
+		}, 
 		forEach: function($array, $callbacks, $alldone) {
 			var 
 				$have_keys = typeof $callbacks !== 'function', 
