@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		$overlay_el = document.getElementById('overlay');
 	
 	
+	zip.workerScriptsPath = 'js/vendor/zip/WebContent/'
+	
+	
 	Array.prototype.forEach.call(document.querySelectorAll('body > div[id]'), function($el) {
 		$el.id = 'x-' + $el.id;
 	});

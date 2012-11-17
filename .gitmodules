@@ -1,3 +1,6 @@
 [submodule "js/vendor/jsrender"]
 	path = js/vendor/jsrender
 	url = git://github.com/BorisMoore/jsrender.git
+[submodule "js/vendor/zip"]
+	path = js/vendor/zip
+	url = git://github.com/gildas-lormeau/zip.js

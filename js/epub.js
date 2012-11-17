@@ -297,6 +297,10 @@
 				$request.addEventListener('error', function($event) {
 					$callback(null);
 				}.bind(this));
+				
+				if(ArchiveReader.polyfill) {
+					$request.exec();
+				}
 			}, function($name) {
 				$name = $name.replace('/../', '/');
 				if(this.$files === undefined) {
@@ -320,6 +324,10 @@
 				$request.addEventListener('error', function($event) {
 					$callback(null);
 				}.bind(this));
+				
+				if(ArchiveReader.polyfill) {
+					$request.exec();
+				}
 			}, '$filenames'), 
 			
 			reader: function() {
