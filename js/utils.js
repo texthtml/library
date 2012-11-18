@@ -42,8 +42,10 @@
 				}
 			};
 		}, 
-		forEach: function($array, $callbacks, $alldone) {
+		forEach: function($input, $callbacks, $alldone) {
 			var 
+				$is_array = $input instanceof Array, 
+				$array = $is_array? $input : [$input], 
 				$have_keys = typeof $callbacks !== 'function', 
 				$results_keys = [], 
 				$results = [], 
@@ -64,7 +66,7 @@
 							}
 						}
 						if($done) {
-						$remaining--;
+							$remaining--;
 						}
 					}
 					else {
@@ -72,7 +74,7 @@
 						$remaining--;
 					}
 					if($remaining === 0) {
-						$alldone($results);
+						$alldone($is_array ? $results : $results[0]);
 					}
 				}: function() {};
 			

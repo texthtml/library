@@ -2,12 +2,12 @@ document.addEventListener('DOMContentLoaded', function() {
 	"use strict";
 	
 	var 
-		$library_el = document.getElementById('library'), 
+		$library_el = document.querySelector('#library'), 
 		$filter_el  = $library_el.querySelector('input[name=filter]'), 
-		$ebook_el   = document.getElementById('ebook'), 
-		$toc_el     = document.getElementById('toc'), 
+		$ebook_el   = document.querySelector('#ebook'), 
+		$toc_el     = document.querySelector('#toc'), 
 		$iframe_el  = $ebook_el.querySelector('iframe'), 
-		$overlay_el = document.getElementById('overlay');
+		$overlay_el = document.querySelector('#overlay');
 	
 	
 	zip.workerScriptsPath = 'js/vendor/zip/WebContent/'
@@ -39,6 +39,35 @@ document.addEventListener('DOMContentLoaded', function() {
 			
 			for(var $key in $data) {
 				$array.push({key: $key, value: $data[$key]});
+			}
+			
+			return this.renderContent($array);
+		}, 
+		selector: function($selector, $data) {
+			if($data === undefined) {
+				$data = this.data;
+			}
+			var $res = $data.querySelector($selector);
+			return $res === null ? '' : this.renderContent($res);
+		}, 
+		ifselector: function($selector, $data) {
+			if($data === undefined) {
+				$data = this.data;
+			}
+			var $res = $data.querySelector($selector);
+			return $res === null ? '' : this.renderContent($data);
+		}, 
+		selectorAll: function($selector, $data) {
+			if($data === undefined) {
+				$data = this.data;
+			}
+			
+			var 
+				$nodes = $data.querySelectorAll($selector), 
+				$array = [];
+			
+			for(var $i = 0; $i < $nodes.length; $i++) {
+				$array.push($nodes[$i]);
 			}
 			
 			return this.renderContent($array);
@@ -134,11 +163,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		render_template('library-identifier-exists', $metadata, function($html) {
 			var $content = set_overlay($html);
 			
-			$content.querySelector('#identifier-exists-cancel').addEventListener(
-				'click', 
-				close_overlay
-			);
-			
 			$content.querySelector('#identifier-exists-update').addEventListener(
 				'click', 
 				function() {
@@ -172,11 +196,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			function($html) {
 				var 
 					$content = set_overlay($html);
-				
-				$content.querySelector('#library-resolve-identifier-cancel').addEventListener(
-					'click', 
-					close_overlay
-				);
 				
 				$content.querySelector('#library-select-identifier-filter').addEventListener(
 					'input', 
@@ -265,11 +284,6 @@ document.addEventListener('DOMContentLoaded', function() {
 						
 					};
 				
-				$content.querySelector('#library-resolve-identifier-cancel').addEventListener(
-					'click', 
-					close_overlay
-				);
-				
 				$content.querySelector('#library-resolve-identifier-conflict').addEventListener(
 					'submit', 
 					function($event) {
@@ -295,16 +309,42 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 	
 	
-	var open_overlay = function($message) {
+	var open_overlay = function($message, $abort, $abort_callback) {
 		$overlay_el.innerHTML = $message || 'loading overlay content';
+		
+		if($abort !== false) {
+			var $button = document.createElement('button');
+			$button.textContent = $abort || 'Abort';
+			$button.className = 'close-overlay';
+			$button.addEventListener('click', function($event) {
+				close_overlay();
+				if($abort_callback !== undefined) {
+					$abort_callback();
+				}
+			});
+			
+			$overlay_el.appendChild($button);
+		}
 		
 		$overlay_el.classList.add('loading');
 		$overlay_el.style.left = 0;
 	};
 	
-	var set_overlay = function($html) {
+	var set_overlay = function($html, $close_callback) {
 		$overlay_el.innerHTML = $html;
 		$overlay_el.classList.remove('loading');
+		
+		Array.prototype.forEach.call($overlay_el.querySelectorAll('.close-overlay'), function($element) {
+			$element.addEventListener('click', function($event) {
+				$event.preventDefault();
+				if($close_callback === undefined) {
+					close_overlay();
+				}
+				else {
+					$close_callback();
+				}
+			});
+		});
 		
 		return $overlay_el;
 	};
@@ -363,7 +403,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			}
 			
-			var $target = document.getElementById('x-'+$prefix);
+			var $target = document.querySelector('#x-'+$prefix);
 			if($target !== null) {
 				$target.classList.add('target');
 			}
@@ -380,6 +420,35 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 	
 	hash_change.import = function() {
+		if(document.querySelector('#opds').dataset.loaded !== 'true') {
+			document.querySelector('#opds').dataset.loaded = 'true';
+			Utils.forEach(OPDS.servers(), {
+				title: function($opds_server, $done) {
+					$opds_server.title(function($title, $subtitle) {
+						$done({main: $title, sub: $subtitle});
+					});
+				}, 
+				icon: function($opds_server, $done) {
+					$opds_server.icon($done);
+				}, 
+				id: function($opds_server, $done) {
+					$opds_server.id($done);
+				}
+			}, function($servers) {
+				$servers = Array.prototype.filter.call($servers, function($server) {
+					return $server.id !== null;
+				});
+				
+				render_template('opds-server-list', {servers: $servers}, function($html) {
+					document.querySelector('#opds').innerHTML = $html;
+					Array.prototype.forEach.call(document.querySelectorAll('#opds li button'), function($button) {
+						$button.addEventListener('click', function($event) {
+							opds_overlay(OPDS.server($button.dataset.serverid), null);
+						});
+					});
+				});
+			});
+		}
 	};
 	
 	hash_change['ebook-bookmarks'] = function($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta) {
@@ -520,7 +589,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		$filter_el.value = '';
 		
 		render_template('library-item', $ebooks, function($html) {
-			document.getElementById('library-list').innerHTML = $html;
+			document.querySelector('#library-list').innerHTML = $html;
 			
 			if(render_ebooks.$focus !== undefined) {
 				document.getElementById(render_ebooks.$focus).focus();
@@ -626,6 +695,67 @@ document.addEventListener('DOMContentLoaded', function() {
 		return (new XMLHttpRequest({mozSystem: true})).mozSystem;
 	});
 	
+	
+	var opds_overlay = function($server, $url, $back) {
+		$server.title(function($title) {
+			open_overlay('loading ' + $title + ' feeds');
+			
+			Utils.forEach($server, {
+				title: function($server, $done) {
+					$server.title($done);
+				}, 
+				searchengine: function($server, $done) {
+					$server.searchengine($done);
+				}, 
+				feed: function($server, $done) {
+					if($url === null) {
+						$server.root(function($feed) {
+							$done($feed ? $feed.documentElement : null);
+						});
+					}
+					else {
+						$server.get($url, function($feed) {
+							if($feed !== null) {
+								$done($feed.documentElement);
+							}
+							else {
+								if($back === undefined) {
+									alert('Can\'t open this ' + $title + ' feed.');
+									close_overlay();
+								}
+								else {
+									if(confirm('Can\'t open this ' + $title + ' feed. Do you want to go to the previous feed?')) {
+										opds_overlay($server, $back);
+									}
+									else {
+										close_overlay();
+									}
+								}
+							}
+						});
+					}
+				}
+			}, function($results) {
+				render_template('opds-feed', $results, function($html) {
+					if($results.feed === null) {
+						alert('Can\'t open this ' + $title + ' feed.');
+						close_overlay();
+					}
+					else {
+						set_overlay($html);
+						
+						Array.prototype.forEach.call($overlay_el.querySelectorAll('button[data-next]'), function($button) {
+							$button.addEventListener('click', function($event) {
+								opds_overlay(this, $event.target.dataset.next, $url);
+							}.bind($server));
+						});
+					}
+				});
+			});
+		});
+	};
+	
+	
 	$wr.library().addEventListener('changed', function($event) {
 		render_ebooks($event.$ebooks);
 	});
@@ -642,13 +772,13 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 	
-	document.getElementById('import_ebook_input').addEventListener('submit', function($e) {
+	document.querySelector('#import_ebook_input form').addEventListener('submit', function($e) {
 		$e.preventDefault();
 		
 		import_blob(this.querySelector('input[type=file]').files[0]);
 	});
 	
-	document.getElementById('import_ebook_internet').addEventListener('submit', function($e) {
+	document.querySelector('#import_ebook_internet form').addEventListener('submit', function($e) {
 		$e.preventDefault();
 		var 
 			$url = this.querySelector('input[type=url]').value, 
@@ -684,7 +814,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 	
-	document.getElementById('fullscreen').addEventListener('click', function($event) {
+	document.querySelector('#fullscreen').addEventListener('click', function($event) {
 		$event.preventDefault();
 		
 		var $ebook = $ebook_el.querySelector('.content');
@@ -704,6 +834,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	window.addEventListener('hashchange', hash_change);
 	$wr.addEventListener('initied', hash_change);
 	
+	OPDS.register('http://m.gutenberg.org/ebooks.opds/');
 	
 	$wr.init();
 });

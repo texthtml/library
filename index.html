@@ -44,21 +44,30 @@
 			</header>
 			
 			<div class="content">
-				<form id="import_ebook_input" action="#">
+				<div id="import_ebook_input">
 					<h2>Upload file</h2>
-					<p>
-						<input required type="file" accept="application/epub+zip"/>
-						<input type="submit" />
-					</p>
-				</form>
+					<form action="#">
+						<p>
+							<input required type="file" accept="application/epub+zip"/>
+							<input type="submit" />
+						</p>
+					</form>
+				</div>
 					
-				<form id="import_ebook_internet" action="#">
+				<div id="import_ebook_opds">
+					<h2>Browse OPDS server(s)</h2>
+					<div id="opds">loading&hellip;</div>
+				</div>
+					
+				<div id="import_ebook_internet">
 					<h2>Download file from the internet</h2>
-					<p>
-						<input required type="url"/>
-						<input type="submit"/>
-					</p>
-				</form>
+					<form action="#">
+						<p>
+							<input required type="url"/>
+							<input type="submit"/>
+						</p>
+					</form>
+				</div>
 			</div>
 			
 			<a class="back" href="#library" data-prefix="library">Back</a>
@@ -162,6 +171,7 @@
 		<script src="js/trigger.js"></script>
 		<script src="js/web-reader.js"></script>
 		<script src="js/epub.js"></script>
+		<script src="js/opds.js"></script>
 		<script src="js/index.js"></script>
 	</body>
 </html>

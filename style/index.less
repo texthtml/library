@@ -294,6 +294,7 @@ body > div {
 	&.overlay {
 		z-index: 2;
 		background: @overlaybg;
+		overflow: auto;
 		
 		&.loading {
 			background-image: url('../images/loading.gif');
@@ -301,6 +302,12 @@ body > div {
 			background-repeat: no-repeat;
 			text-align: center;
 			line-height: 50vh;
+			
+			.close-overlay {
+				position: absolute;
+				left: 0;
+				top: 0;
+			}
 		}
 	}
 }
@@ -321,4 +328,61 @@ html.apps[data-installed=false] button#install {
 	width: 100%;
 	border: 0;
 	line-height: 3rem;
+}
+
+#opds ul {
+	list-style: none;
+	padding: 0;
+	
+	button {
+		width: 100%;
+		border: 0;
+		padding: 0;
+		background: none;
+		text-align: left;
+		
+		img {
+			margin-right: 3px;
+			vertical-align: middle;
+		}
+		
+		hgroup {
+			display: inline-block;
+			vertical-align: middle;
+			
+			* {
+				margin: 0;
+				font-weight: normal;
+				text-align: left;
+				font-size: 1em;
+			}
+			
+			h1 {
+				font-size: 1.1em;
+			}
+		}
+	}
+}
+
+.opds-feed ol {
+	list-style: none;
+	padding: 0;
+	
+	button {
+		width: 100%;
+		padding: 0;
+		border: 0;
+		background: none;
+		text-align: left;
+		
+		em * {
+			vertical-align: middle;
+			line-height: 1.5em;
+			max-height: 1.5em;
+		}
+		
+		div {
+			font-weight: lighter;
+		}
+	}
 }
