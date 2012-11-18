@@ -1,6 +1,6 @@
 {
-  "name": "Web Reader",
-  "description": "Web Reader is an EBook reader for mobile devices.",
+  "name": "Library",
+  "description": "Read your EBooks.",
   "version": "201210111652", 
   
   "launch_path": "/",
@@ -11,7 +11,9 @@
   },
   
   "permissions": {
-    "systemXHR":{}
+    "systemXHR":{
+      "description": "Required to download EBook from the web and to access OPDS servers (eg: gutenberg.org)"
+    }
   },
   
   "icons": {
