@@ -1,0 +1,17 @@
+<ul>
+	{{for servers}}
+	<li>
+		<button data-serverid="{{>id}}">
+			{{if icon}}
+				<img src="{{>icon}}"/>
+			{{/if}}
+			<hgroup>
+				<h1>{{>title.main}}</h1>
+				{{if title.sub}}
+					<h2>{{>title.sub}}</h2>
+				{{/if}}
+			</hgroup>
+		</button>
+	</li>
+	{{/for}}
+</ul>
