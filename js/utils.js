@@ -44,7 +44,7 @@
 		}, 
 		forEach: function($input, $callbacks, $alldone) {
 			var 
-				$is_array = $input instanceof Array, 
+				$is_array = $input instanceof Array || $input instanceof NodeList, 
 				$array = $is_array? $input : [$input], 
 				$have_keys = typeof $callbacks !== 'function', 
 				$results_keys = [], 

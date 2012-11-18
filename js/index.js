@@ -18,21 +18,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 	
 	
-	jsviews.helpers({
-		nodelist_to_array: function($nodelist) {
-			var 
-				$array = [];
-			
-			if($nodelist !== null) {
-				for(var $i = 0; $i < $nodelist.length; $i++) {
-					$array.push($nodelist[$i]);
-				}
-			}
-			
-			return $array;
-		}
-	}); 
-	
 	jsviews.tags({
 		each: function($data) {
 			var $array = [];
