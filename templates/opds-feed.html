@@ -66,7 +66,12 @@
 					<hr/>
 					<ul>
 					{{selectorAll 'link[rel="http://opds-spec.org/acquisition"]'}}
-						{{>getAttribute('type')}}
+						{{if ~ebook_formats()[getAttribute('type')]}}
+							<button 
+								data-ebook-uri="{{>getAttribute('href')}}" 
+								data-type="{{>getAttribute('type')}}"
+							>Download eBook in {{>~ebook_formats()[getAttribute('type')]}}</button>
+						{{/if}}
 					{{/selectorAll}}
 					</ul>
 					

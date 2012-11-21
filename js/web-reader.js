@@ -208,6 +208,16 @@
 				this.library().init();
 			}, 
 			
+			formats: function() {
+				var $formats = {};
+				
+				for(var $mime in $ebook_handlers) {
+					$formats[$mime] = $ebook_handlers[$mime].name;
+				}
+				
+				return $formats;
+			}, 
+			
 			register: function($mime, $handler, $name) {
 				$ebook_handlers[$mime] = {
 					factory: $handler, 

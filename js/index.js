@@ -18,6 +18,10 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 	
 	
+	jsviews.helpers({
+		ebook_formats: WR.formats
+	});
+	
 	jsviews.tags({
 		each: function($data) {
 			var $array = [];
@@ -583,6 +587,33 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	};
 	
+	var download_ebook = function($uri, $failure) {
+		var $xhr = new XMLHttpRequest({mozSystem: true});
+		
+		open_overlay('Getting EBook...');
+		
+		$xhr.open('GET', $uri);
+		$xhr.overrideMimeType('application/epub+zip');
+		$xhr.responseType = 'blob';
+		$xhr.onreadystatechange = function($event) {
+			if(this.readyState === 4) {
+				if(this.response === null) {
+					if($failure === undefined) {
+						alert('Could not load EBook');
+						close_overlay();
+					}
+					else {
+						$failure($xhr);
+					}
+				}
+				else {
+					import_blob(this.response);
+				}
+			}
+		}
+		$xhr.send();
+	}
+	
 	
 	var $manifest_url = window.location.protocol + '//' + window.location.hostname + window.location.pathname + 'manifest.webapp';
 	
@@ -731,8 +762,21 @@ document.addEventListener('DOMContentLoaded', function() {
 						
 						Array.prototype.forEach.call($overlay_el.querySelectorAll('button[data-next]'), function($button) {
 							$button.addEventListener('click', function($event) {
-								opds_overlay(this, $event.target.dataset.next, $url);
-							}.bind($server));
+								opds_overlay($server, $event.target.dataset.next, $url);
+							});
+						});
+						
+						Array.prototype.forEach.call($overlay_el.querySelectorAll('button[data-ebook-uri]'), function($button) {
+							$button.addEventListener('click', function($event) {
+								$event.preventDefault();
+								download_ebook(
+									$event.target.dataset.ebookUri, 
+									function() {
+										alert('Could not load EBook');
+										opds_overlay($server, $url, $back);
+									}
+								);
+							});
 						});
 					}
 				});
@@ -765,27 +809,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	document.querySelector('#import_ebook_internet form').addEventListener('submit', function($e) {
 		$e.preventDefault();
-		var 
-			$url = this.querySelector('input[type=url]').value, 
-			$xhr = new XMLHttpRequest({mozSystem: true});
-		
-		open_overlay('Getting EBook...');
-		
-		$xhr.open('GET', $url);
-		$xhr.overrideMimeType('application/epub+zip');
-		$xhr.responseType = 'blob';
-		$xhr.onreadystatechange = function($event) {
-			if(this.readyState === 4) {
-				if(this.response === null) {
-					alert('Could not load EBook');
-					close_overlay();
-				}
-				else {
-					import_blob(this.response);
-				}
-			}
-		}
-		$xhr.send();
+		download_ebook(this.querySelector('input[type=url]').value);
 	});
 	
 	$toc_el.querySelector('.content').addEventListener('click', function($evt) {
