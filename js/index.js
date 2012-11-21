@@ -587,13 +587,13 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	};
 	
-	var download_ebook = function($uri, $failure) {
+	var download_ebook = function($uri, $mime, $failure) {
 		var $xhr = new XMLHttpRequest({mozSystem: true});
 		
 		open_overlay('Getting EBook...');
 		
 		$xhr.open('GET', $uri);
-		$xhr.overrideMimeType('application/epub+zip');
+		$xhr.overrideMimeType($mime || 'application/epub+zip');
 		$xhr.responseType = 'blob';
 		$xhr.onreadystatechange = function($event) {
 			if(this.readyState === 4) {
@@ -771,6 +771,7 @@ document.addEventListener('DOMContentLoaded', function() {
 								$event.preventDefault();
 								download_ebook(
 									$event.target.dataset.ebookUri, 
+									$event.target.dataset.type, 
 									function() {
 										alert('Could not load EBook');
 										opds_overlay($server, $url, $back);
