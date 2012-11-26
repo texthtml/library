@@ -23,12 +23,12 @@
 					$storage.$loaded = false;
 					$storage.$callbacks = [$callback];
 					
-					Array.prototype.push.call(arguments, function($data) {
-						$storage.$data = $data;
+					Array.prototype.push.call(arguments, function() {
+						$storage.$data = arguments;
 						$storage.$loaded = true;
 						
 						while($storage.$callbacks.length !== 0) {
-							$storage.$callbacks.shift()($storage.$data);
+							$storage.$callbacks.shift().apply(this, $storage.$data);
 						}
 					}.bind(this));
 					
@@ -38,7 +38,7 @@
 					$storage.$callbacks.push($callback);
 				}
 				else {
-					$callback($storage.$data);
+					$callback.apply(this, $storage.$data);
 				}
 			};
 		}, 

@@ -109,7 +109,7 @@
 				});
 			}, 
 			
-			spine: function($spine, $callback) {
+			spine: Utils.cache(function($spine, $callback) {
 				var 
 					fct = function($href, $folder) {
 						this.file($folder + $href, function($file) {
@@ -131,7 +131,16 @@
 						fct($spine, $rootfile_dir);
 					}
 				}.bind(this));
-			}, 
+			}, function($name) {
+				if(this.$spines === undefined) {
+					this.$spines = {};
+				}
+				if(this.$spines[$name] === undefined) {
+					this.$spines[$name] = {};
+				}
+				
+				return this.$spines[$name];
+			}), 
 			
 			item: function($id) {
 				this.rootfile(function($rootfile) {

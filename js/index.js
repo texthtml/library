@@ -463,7 +463,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					$el = $iframe_el.contentDocument.querySelector($ebook_hash), 
 					$top = $el === null ? 0 : $el.getClientRects()[0].top;
 				
-				$ebook_el.querySelector('.content').scrollTop = Math.round($top);
+				$iframe_el.contentDocument.documentElement.scrollTop = Math.round($top);
 			}
 		};
 		
@@ -471,51 +471,13 @@ document.addEventListener('DOMContentLoaded', function() {
 			hash_change.ebook.$ebook_id !== $ebook_id || 
 			hash_change.ebook.$ebook_spine !== $ebook_spine
 		) {
-			/**
-			 * seamless "polyfill" 
-			 * @see https://bugzilla.mozilla.org/show_bug.cgi?id=80713
-			 * @see #35
-			 */
-			var $parent = $iframe_el.parentNode;
-			$parent.removeChild($iframe_el);
-			$iframe_el = document.createElement('iframe');
-			$parent.insertBefore($iframe_el, $ebook_el.querySelector('a[rel=next]'));
 			
 			$iframe_el.contentDocument.open();
 			$iframe_el.contentDocument.write('loading ebook…');
 			$iframe_el.contentDocument.close();
 			
 			$ebook.spine($ebook_spine, function($html, $spine) {
-				hash_change.ebook.$ebook_id    = $ebook_id;
-				hash_change.ebook.$ebook_spine = $ebook_spine;
-				
-				/** seamless "polyfill" **/
-				var $parent = $iframe_el.parentNode;
-				$parent.removeChild($iframe_el);
-				$iframe_el = document.createElement('iframe');
-				$parent.insertBefore($iframe_el, $ebook_el.querySelector('a[rel=next]'));
-				
-				$ebook.prev_next($spine, function($prev, $next) {
-					$ebook_el.querySelector('a[rel=prev]').href = ($prev === null) ? '#' : '#ebook/' + $ebook_id.replace('@', '\\@', 'g') + '@' + $prev.replace('@', '\\@', 'g');
-					$ebook_el.querySelector('a[rel=next]').href = ($next === null) ? '#' : '#ebook/' + $ebook_id.replace('@', '\\@', 'g') + '@' + $next.replace('@', '\\@', 'g');
-				});
-				
-				$iframe_el.contentDocument.open();
-				$iframe_el.contentDocument.write($html);
-				$iframe_el.contentDocument.close();
-				
-				$iframe_el.onload = function() {
-					/** seamless "polyfill" **/
-					var 
-						$height = $iframe_el.contentDocument.documentElement.getBoundingClientRect().height;
-					$iframe_el.style.height = $height + 'px';
-					$height = $iframe_el.contentDocument.documentElement.scrollHeight;
-					$iframe_el.style.height = $height + 'px';
-					
-					move_to_hash();
-				};
-				
-				Array.prototype.forEach.call($iframe_el.contentDocument.querySelectorAll('a'), function($link) {
+				var ebook_link = function($link) {
 					$link.addEventListener('click', function($event) {
 						if(this.nodeName === 'A') {
 							$event.preventDefault();
@@ -525,7 +487,53 @@ document.addEventListener('DOMContentLoaded', function() {
 							window.location.hash = ebook_link_to_wr($ebook_el.dataset.prefix, $ebook_id, $href);
 						}
 					});
+				};
+				
+				hash_change.ebook.$ebook_id    = $ebook_id;
+				hash_change.ebook.$ebook_spine = $ebook_spine;
+				
+				$iframe_el.contentDocument.open();
+				$iframe_el.contentDocument.write($html);
+				$iframe_el.contentDocument.close();
+				
+				$ebook.prev_next($spine, function($prev, $next) {
+					var make_prev_next_link = function($link) {
+						ebook_link($link);
+						$link.style.display = 'block';
+						$link.style.lineHeight = '2em';
+						$link.style.marginTop = '2em';
+						$link.style.marginBottom = '2em';
+						
+						$link.style.textAlign = 'center';
+					};
+					
+					if($prev !== null) {
+						var $a_prev = $iframe_el.contentDocument.createElement('a');
+						$a_prev.textContent = 'prev';
+						$a_prev.href = $prev;
+						make_prev_next_link($a_prev);
+						$iframe_el.contentDocument.body.insertBefore(
+							$a_prev, 
+							$iframe_el.contentDocument.body.firstChild
+						);
+					}
+					
+					if($next !== null) {
+						var $a_next = $iframe_el.contentDocument.createElement('a');
+						$a_next.textContent = 'next';
+						$a_next.href = $next;
+						make_prev_next_link($a_next);
+						$iframe_el.contentDocument.body.appendChild(
+							$a_next
+						);
+					}
 				});
+				
+				$iframe_el.onload = function() {
+					move_to_hash();
+				};
+				
+				Array.prototype.forEach.call($iframe_el.contentDocument.querySelectorAll('a'), ebook_link);
 			});
 		}
 		else {
