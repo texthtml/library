@@ -4,7 +4,8 @@
   "version": "201210111652", 
   
   "launch_path": "/",
-  
+  "appcache_path": "/offline.appcache",
+
   "developer": {
     "name": "Mathieu Rochette",
     "url": "https://mathieu.rochette.cc/"

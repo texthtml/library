@@ -1,12 +1,30 @@
 CACHE MANIFEST Version 1
 
+index.html
+
 css/normalize.css
 css/index.css
 
-http://code.jquery.com/jquery-1.7.js
-js/modernizr-latest.js
-js/vendor/js-unzip.js
-js/vendor/js-inflate.js
-js/epub.js
+js/vendor/modernizr-latest.js
+js/vendor/zip/WebContent/zip.js
+js/vendor/jsrender/jsrender.js
+js/utils.js
+js/archivereader.js
+js/trigger.js
 js/web-reader.js
+js/epub.js
+js/opds.js
 js/index.js
+
+templates/epub-toc.html
+templates/epub-toc-item.html
+templates/library-identifier-exists.html
+templates/library-identifier-resolve-conflict.html
+templates/library-identifier-select-ebook.html
+templates/library-item.html
+templates/opds-failed.html
+templates/opds-feed.html
+templates/opds-server-list.html
+
+images/loading.gif
+images/web-reader.png
