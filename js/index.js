@@ -406,6 +406,29 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 	
 	hash_change.settings = function() {
+		if(
+			document.documentElement.dataset.installed === 'undefined' && 
+			Modernizr.apps === true
+		) {
+			get_app(function($app) {
+				document.documentElement.dataset.installed = $app !== null;
+				
+				if($app !== null) {
+					var 
+						$manifest = $app.manifest, 
+						$xhr = new XMLHttpRequest();
+					
+					$xhr.open('GET', $app.manifestURL);
+					$xhr.responseType = 'json';
+					$xhr.onreadystatechange = function($event) {
+						if(this.readyState === 4) {
+							document.documentElement.dataset.uptodate =  this.response.version === $app.manifest.version;
+						}
+					}
+					$xhr.send();
+				}
+			});
+		}
 	};
 	
 	hash_change.import = function() {
@@ -693,27 +716,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	Modernizr.addTest('apps', function() {
 		return window.navigator.mozApps;
 	});
-	
-	if(Modernizr.apps === true) {
-		get_app(function($app) {
-			document.documentElement.dataset.installed = $app !== null;
-			
-			if($app !== null) {
-				var 
-					$manifest = $app.manifest, 
-					$xhr = new XMLHttpRequest();
-				
-				$xhr.open('GET', $app.manifestURL);
-				$xhr.responseType = 'json';
-				$xhr.onreadystatechange = function($event) {
-					if(this.readyState === 4) {
-						document.documentElement.dataset.uptodate =  this.response.version === $app.manifest.version;
-					}
-				}
-				$xhr.send();
-			}
-		});
-	}
 	
 	Modernizr.addTest('system-xhr', function() {
 		return (new XMLHttpRequest({mozSystem: true})).mozSystem;
