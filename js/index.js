@@ -505,7 +505,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						if(this.nodeName === 'A') {
 							$event.preventDefault();
 							var 
-								$href = $spine.slice(0, $spine.lastIndexOf('/') + 1) + this.getAttribute('href');
+								$href = this.getAttribute('href');
 							
 							window.location.hash = ebook_link_to_wr($ebook_el.dataset.prefix, $ebook_id, $href);
 						}
