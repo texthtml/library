@@ -1,9 +1,10 @@
-CACHE MANIFEST Version 1
+CACHE MANIFEST
+#Version 1
 
 index.html
 
-css/normalize.css
-css/index.css
+style/normalize.css
+style/index.css
 
 js/vendor/modernizr-latest.js
 js/vendor/zip/WebContent/zip.js
