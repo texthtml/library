@@ -7,7 +7,7 @@
 		
 		return {
 			init: function() {
-				var $request = indexedDB.open('web-reader', 1);
+				var $request = indexedDB.open('library', 1);
 				
 				$request.addEventListener('success', function($event) {
 					var $ebooks = [];
@@ -36,8 +36,8 @@
 				$request.addEventListener('upgradeneeded', function($event) {
 					switch($event.oldVersion) {
 						case 0:
-							this.result.createObjectStore('metadata');
 							this.result.createObjectStore('files');
+							this.result.createObjectStore('metadata');
 					}
 				});
 			}, 
@@ -61,12 +61,13 @@
 				});
 			}, 
 			
-			list: function($callback, $hash_object) {
+			list: function($callback) {
 				var 
-					$ebooks = $hash_object === true ? {} : [], 
+					$ebooks = {}, 
 					$transaction = $db.transaction('metadata');
 				
 				$transaction.addEventListener('complete', function($event) {
+					console.log($ebooks);
 					$callback($ebooks);
 				});
 				
@@ -74,12 +75,8 @@
 					var $cursor = $event.target.result;
 					
 					if($cursor !== null && $cursor !== undefined) {
-						if($hash_object) {
-							$ebooks[$cursor.key] = $cursor.value;
-						}
-						else {
-							$ebooks.push($cursor.value);
-						}
+						$ebooks[$cursor.key] = $cursor.value;
+
 						$cursor.continue();
 					}
 				});
@@ -149,25 +146,28 @@
 				var 
 					$metadata, 
 					$blob, 
-					complete = function() {
-						if($metadata !== undefined && $blob !== undefined) {
-							var 
-								$handler = WR.handler($metadata.type);
-							
-							if($handler !== undefined) {
-								$callback($handler.factory($blob));
-							}
-						}
-					};
-				
-				var $transaction = $db.transaction(['metadata', 'files'], 'readonly');
-				$transaction.objectStore('metadata').get($identifier).addEventListener('success', function($event) {
-					$metadata = $event.target.result;
-					complete();
-				});
-				$transaction.objectStore('files').get($identifier).addEventListener('success', function($event) {
+					$transaction = $db.transaction(['metadata', 'files'], 'readonly'), 
+					$file_request = $transaction.objectStore('files').get($identifier), 
+					$metadata_request = $transaction.objectStore('metadata').get($identifier);
+
+				$file_request.addEventListener('success', function($event) {
 					$blob = $event.target.result;
-					complete();
+				});
+				$metadata_request.addEventListener('success', function($event) {
+					$metadata = $event.target.result;
+				});
+				$transaction.addEventListener('complete', function($event) {
+					var 
+						$handler, 
+						$ebook;
+					
+					if($metadata !== undefined) {
+						$handler = WR.handler($metadata.type);
+					}
+					if($handler !== undefined && $blob !== undefined) {
+						$ebook = $handler.factory($blob, typeof $metadata === 'object' ? $metadata.settings : undefined);
+					}
+					$callback($ebook, $metadata);
 				});
 			}, 
 			
@@ -176,6 +176,29 @@
 				
 				$transaction.objectStore('metadata').get($identifier).addEventListener('success', function($event) {
 					$callback($event.target.result);
+				});
+			}, 
+
+			set_ebook_settings: function($ebook_identifier, $settings, $callback) {
+				var 
+					$transaction = $db.transaction(['metadata'], 'readwrite'), 
+					$new_settings;
+				
+				$transaction.addEventListener('complete', function($event) {
+					if(typeof $callback === 'function') {
+						$callback($new_settings);
+					}
+				}.bind(this));
+				
+				$transaction.objectStore('metadata').get($ebook_identifier).addEventListener('success', function($event) {
+					$new_settings = (this.result.settings || {});
+					for(var $name in $settings) {
+						$new_settings[$name] = $settings[$name];
+					}
+
+					this.result.settings = $new_settings;
+
+					$transaction.objectStore('metadata').put(this.result, $ebook_identifier);
 				});
 			}, 
 			
@@ -205,6 +228,7 @@
 				this.library().addEventListener('initied', function() {
 					this.trigger('initied');
 				}.bind(this));
+
 				this.library().init();
 			}, 
 			
