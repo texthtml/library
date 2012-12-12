@@ -67,7 +67,6 @@
 					$transaction = $db.transaction('metadata');
 				
 				$transaction.addEventListener('complete', function($event) {
-					console.log($ebooks);
 					$callback($ebooks);
 				});
 				

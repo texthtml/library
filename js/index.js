@@ -442,6 +442,18 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 	
 	hash_change.import = function() {
+		var $ebook_type_select = document.querySelector('#import_ebook_internet select:empty');
+		if($ebook_type_select !== null) {
+			var $option = document.createElement('option');
+			$ebook_type_select.appendChild($option);
+			var $formats = $wr.formats();
+			for(var $mime in $formats) {
+				var $option = document.createElement('option');
+				$option.value = $mime;
+				$option.textContent = $formats[$mime];
+				$ebook_type_select.appendChild($option);
+			}
+		}
 		if(document.querySelector('#opds').dataset.loaded !== 'true') {
 			document.querySelector('#opds').dataset.loaded = 'true';
 			Utils.forEach(OPDS.servers(), {
@@ -928,7 +940,30 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	document.querySelector('#import_ebook_internet form').addEventListener('submit', function($e) {
 		$e.preventDefault();
-		download_ebook(this.querySelector('input[type=url]').value);
+		download_ebook(
+			this.querySelector('input[type=url]').value, 
+			this.querySelector('select[name=type]').value
+		);
+	});
+	
+	document.querySelector('#import_ebook_internet input[type=url]').addEventListener('input', function($e) {
+		var 
+			$type = this.value.split('.'), 
+			$select = this.parentNode.querySelector('select[name=type]'), 
+			$options = $select.querySelectorAll('option'), 
+			$value = '';
+
+		$type = $type[$type.length - 1].toLowerCase();
+
+		for(var $i = 0; $i < $options.length; $i++) {
+			if(
+				$options[$i].value.toLowerCase() === $type || 
+				$options[$i].textContent.toLowerCase() === $type
+			) {
+				$value = $options[$i].value;
+			}
+		}
+		$select.value = $value;
 	});
 	
 	$toc_el.querySelector('.content').addEventListener('click', function($evt) {
