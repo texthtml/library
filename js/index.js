@@ -540,7 +540,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					$iframe_el.contentDocument.documentElement.scrollTop = $ebook_delta;
 				}
 
-				// save_reading_position($ebook_id, $ebook_spine, $ebook_hash);
+				save_reading_position($ebook_id, $ebook_spine, $ebook_hash);
 			}
 		};
 		
@@ -809,10 +809,12 @@ document.addEventListener('DOMContentLoaded', function() {
 				document.documentElement.dataset.uptodate = true;
 				
 				alert('Web Reader install ended successfully!');
+				close_overlay();
 			});
 			
 			$installation.addEventListener('error', function($event) {
 				alert('installation-error' + this.name);
+				close_overlay();
 			});
 			
 			open_overlay('Installation in progress...');
@@ -960,7 +962,11 @@ document.addEventListener('DOMContentLoaded', function() {
 	window.addEventListener('hashchange', hash_change);
 	$wr.addEventListener('initied', hash_change);
 	
-	OPDS.register('http://m.gutenberg.org/ebooks.opds/');
+	// OPDS.register('www.smashwords.com/atom');
+	// OPDS.register('http://manybooks.net/opds/');
+	OPDS.register('www.feedbooks.com');
+	// OPDS.register('');
+	// OPDS.register('m.gutenberg.org');
 	
 	$wr.init();
 });
