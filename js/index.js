@@ -517,7 +517,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				$metadata.settings.reading_position !== undefined && 
 				(
 					$metadata.settings.reading_position.spine !== $ebook_spine || 
-					$metadata.settings.reading_position.delta !== $ebook_delta
+					$metadata.settings.reading_position.delta !== ($ebook_delta || 0)
 				) && 
 				confirm('Do you want to resume reading at the position you stopped last time?')
 			) {
