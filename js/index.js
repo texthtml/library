@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		$filter_el  = $library_el.querySelector('input[name=filter]'), 
 		$ebook_el   = document.querySelector('#ebook'), 
 		$toc_el     = document.querySelector('#toc'), 
+		$ebook_settings_el   = document.querySelector('#ebook-settings'), 
 		$iframe_el  = $ebook_el.querySelector('iframe'), 
 		$overlay_el = document.querySelector('#overlay');
 	
@@ -489,6 +490,12 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 	
 	hash_change['ebook-settings'] = function($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta) {
+		delete $ebook_settings_el.dataset.ebookid;
+
+		$wr.get_settings(['save_reading_position'], function($settings) {
+			$ebook_settings_el.dataset.ebookid = $ebook_id;
+			$ebook_settings_el.querySelector('input[name=save_position]').checked = $settings.save_reading_position === true;
+		}, $ebook_id);
 	};
 	
 	hash_change.toc = function($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta) {
@@ -501,7 +508,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	};
 	
-	hash_change.ebook = function($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta, $metadata) {
+	hash_change.ebook = function($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta) {
 		if($ebook === undefined) {
 			alert('Could not load the book.');
 			window.location.hash = 'library';
@@ -509,51 +516,66 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 
 		var move_to_hash = function() {
-
-			if(
-				$ebook_spine === undefined && 
-				$metadata !== undefined && 
-				$metadata.settings !== undefined && 
-				$metadata.settings.reading_position !== undefined && 
-				(
-					$metadata.settings.reading_position.spine !== $ebook_spine || 
-					$metadata.settings.reading_position.delta !== ($ebook_delta || 0)
-				) && 
-				confirm('Do you want to resume reading at the position you stopped last time?')
-			) {
-				if($metadata.settings.reading_position.spine !== $ebook_spine) {
-					window.location.hash = ebook_link_to_wr(
-						'ebook', 
-						$ebook_id, 
-						$metadata.settings.reading_position.spine, 
-						$metadata.settings.reading_position.delta
-					);
+			$wr.get_settings(['save_reading_position', 'reading_position'], function($settings) {
+				
+				var $delta = $delta === undefined ? $iframe_el.contentDocument.documentElement.scrollTop : $delta;
+				if(
+					$ebook_spine === undefined && 
+					$settings.save_reading_position !== false && 
+					$settings.reading_position !== undefined && 
+					(
+						$settings.reading_position.spine !== $ebook_spine || 
+						$settings.reading_position.delta !== $delta
+					) && 
+					confirm('Do you want to resume reading at the position you stopped last time?')
+				) {
+					if($settings.reading_position.spine !== $ebook_spine) {
+						window.location.hash = ebook_link_to_wr(
+							'ebook', 
+							$ebook_id, 
+							$settings.reading_position.spine, 
+							$settings.reading_position.delta
+						);
+					}
+					else {
+						$iframe_el.contentDocument.documentElement.scrollTop = Math.round($settings.reading_position.delta);
+						save_reading_position($ebook_id, $ebook_spine, $ebook_hash);
+					}
 				}
 				else {
-					$iframe_el.contentDocument.documentElement.scrollTop = Math.round($metadata.settings.reading_position.delta);
-					save_reading_position($ebook_id, $ebook_spine, $ebook_hash);
-				}
-			}
-			else {
-				if($ebook_delta === undefined && $ebook_hash !== undefined) {
-					var 
-						$el = $iframe_el.contentDocument.querySelector($ebook_hash);
-
-					if($el === null) {
-						$el = $iframe_el.contentDocument.getElementById($ebook_hash);
+					if($ebook_delta === undefined && $ebook_hash !== undefined) {
+						var 
+							$el = $iframe_el.contentDocument.querySelector($ebook_hash);
+						
+						if($el === null) {
+							$el = $iframe_el.contentDocument.getElementById($ebook_hash);
+						}
+						
+						$ebook_delta = $el === null ? 0 : Math.round($el.getClientRects()[0].top);
+					}
+					if(
+						$ebook_delta !== undefined && 
+						$iframe_el.contentDocument.documentElement.scrollTop !== $ebook_delta
+					) {
+						$iframe_el.contentDocument.documentElement.scrollTop = $ebook_delta;
 					}
 					
-					$ebook_delta = $el === null ? 0 : Math.round($el.getClientRects()[0].top);
+					if($settings.save_reading_position) {
+						save_reading_position($ebook_id, $ebook_spine, $ebook_hash);
+					}
 				}
-				if(
-					$ebook_delta !== undefined && 
-					$iframe_el.contentDocument.documentElement.scrollTop !== $ebook_delta
-				) {
-					$iframe_el.contentDocument.documentElement.scrollTop = $ebook_delta;
+				
+				if($settings.save_reading_position !== false) {
+					$iframe_el.contentDocument.onscroll = (function($ebook_id, $ebook_spine, $ebook_hash) {
+						return function() {
+							save_reading_position($ebook_id, $ebook_spine, $ebook_hash);
+						}
+					}) ($ebook_id, $ebook_spine, $ebook_hash);
 				}
-
-				save_reading_position($ebook_id, $ebook_spine, $ebook_hash);
-			}
+				else {
+					$iframe_el.contentDocument.onscroll = undefined;
+				}
+			}, $ebook_id);
 		};
 		
 		if(
@@ -585,12 +607,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				$iframe_el.contentDocument.open();
 				$iframe_el.contentDocument.write($html);
 				$iframe_el.contentDocument.close();
-
-				$iframe_el.contentDocument.addEventListener('scroll', (function($ebook_id, $ebook_spine, $ebook_hash) {
-					return function() {
-						save_reading_position($ebook_id, $ebook_spine, $ebook_hash);
-					}
-				}) ($ebook_id, $ebook_spine, $ebook_hash));
 				
 				$ebook.prev_next($spine, function($prev, $next) {
 					var make_prev_next_link = function($link) {
@@ -660,13 +676,18 @@ document.addEventListener('DOMContentLoaded', function() {
 							($ebook_spine !== undefined ? $ebook_spine : '') + ($ebook_hash !== undefined ? '#' + $ebook_hash : ''), 
 							$delta
 						);
-
-					$wr.library().set_ebook_settings($ebook_id, {
-						reading_position: {
-							spine: $ebook_spine, 
-							delta: $delta
-						}
-					});
+					
+					$wr.set_settings(
+						{
+							reading_position: {
+								spine: $ebook_spine, 
+								delta: $delta
+							}
+						}, 
+						function() {}, 
+						function() {alert('Can\'t save reading position.')}, 
+						$ebook_id
+					);
 				}
 			}) ($iframe_el.contentDocument.documentElement.scrollTop), 1000);
 		}
@@ -685,12 +706,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		
 		if($ebook_id !== load_ebook.$current_ebook_id) {
-			$wr.library().load($ebook_id, function($ebook, $metadata) {
+			$wr.library().load($ebook_id, function($ebook) {
 				load_ebook.$current_ebook = $ebook;
 				load_ebook.$current_ebook_id = $ebook_id;
-				load_ebook.$current_ebook_metadata = $metadata;
 				
-				$callback($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta, $metadata);
+				$callback($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta);
 			});
 		}
 		else {
@@ -914,6 +934,21 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 		});
 	};
+
+	$ebook_settings_el.querySelector('input[name=save_position]').addEventListener('change', function($event) {
+		$wr.set_settings(
+			{
+				save_reading_position: $event.target.checked, 
+				reading_position: undefined
+			}, 
+			function() {}, 
+			function() {
+				alert('Couldn\'t save preference');
+				this.checked = !this.checked;
+			}.bind(this), 
+			$ebook_settings_el.dataset.ebookid
+		);
+	});
 	
 	
 	$wr.library().addEventListener('changed', function($event) {

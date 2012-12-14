@@ -38,6 +38,8 @@
 						case 0:
 							this.result.createObjectStore('files');
 							this.result.createObjectStore('metadata');
+						case 1:
+							this.result.createObjectStore('settings');
 					}
 				});
 			}, 
@@ -164,23 +166,31 @@
 						$handler = WR.handler($metadata.type);
 					}
 					if($handler !== undefined && $blob !== undefined) {
-						$ebook = $handler.factory($blob, typeof $metadata === 'object' ? $metadata.settings : undefined);
+						$ebook = $handler.factory($blob);
 					}
 					$callback($ebook, $metadata);
 				});
 			}, 
 			
 			metadata: function($identifier, $callback) {
-				var $transaction = $db.transaction(['metadata', 'files'], 'readonly');
+				var $transaction = $db.transaction(['metadata'], 'readonly');
 				
 				$transaction.objectStore('metadata').get($identifier).addEventListener('success', function($event) {
 					$callback($event.target.result);
 				});
 			}, 
-
-			set_ebook_settings: function($ebook_identifier, $settings, $callback) {
+			
+			get_ebook_settings: function($identifier, $callback) {
+				var $transaction = $db.transaction(['settings'], 'readonly');
+				
+				$transaction.objectStore('settings').get($identifier).addEventListener('success', function($event) {
+					$callback(this.result || {});
+				});
+			}, 
+			
+			set_ebook_settings: function($identifier, $settings, $callback, $error) {
 				var 
-					$transaction = $db.transaction(['metadata'], 'readwrite'), 
+					$transaction = $db.transaction(['settings'], 'readwrite'), 
 					$new_settings;
 				
 				$transaction.addEventListener('complete', function($event) {
@@ -189,15 +199,13 @@
 					}
 				}.bind(this));
 				
-				$transaction.objectStore('metadata').get($ebook_identifier).addEventListener('success', function($event) {
-					$new_settings = (this.result.settings || {});
+				$transaction.objectStore('settings').get($identifier).addEventListener('success', function($event) {
+					$new_settings = (this.result || {});
 					for(var $name in $settings) {
 						$new_settings[$name] = $settings[$name];
 					}
 
-					this.result.settings = $new_settings;
-
-					$transaction.objectStore('metadata').put(this.result, $ebook_identifier);
+					$transaction.objectStore('settings').put($new_settings, $identifier);
 				});
 			}, 
 			
@@ -277,7 +285,39 @@
 						open.call(this, $ebook, $spine, $hash);
 					}.bind(this));
 				}
-			},
+			}, 
+			
+			get_settings: function($settings, $callback, $ebook_id) {
+				var 
+					$wr_settings = {
+						save_reading_position: true
+					}, 
+					$return_settings = function($ebook_settings) {
+						var $results = {};
+						for(var $i = 0; $i < $settings.length; $i++) {
+							var $name = $settings[$i];
+							$results[$name] = $ebook_settings[$name] === undefined ? $wr_settings[$name] : $ebook_settings[$name];
+						}
+						
+						$callback($results);
+					};
+				
+				if($ebook_id === undefined) {
+					$return_settings({});
+				}
+				else {
+					this.library().get_ebook_settings($ebook_id, $return_settings);
+				}
+			}, 
+			
+			set_settings: function($settings, $callback, $error, $ebook_id) {
+				if($ebook_id === undefined) {
+					$error('not implemented');
+				}
+				else {
+					this.library().set_ebook_settings($ebook_id, $settings, $callback, $error);
+				}
+			}, 
 			
 			addEventListener: Trigger.addEventListener, 
 			trigger: Trigger.trigger
