@@ -14,11 +14,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	zip.workerScriptsPath = 'js/vendor/zip/WebContent/'
 	
 	
-	Array.prototype.forEach.call(document.querySelectorAll('body > div[id]'), function($el) {
-		$el.id = 'x-' + $el.id;
-	});
-	
-	
 	jsviews.helpers({
 		ebook_formats: WR.formats
 	});
@@ -401,7 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			}
 			
-			var $target = document.querySelector('#x-'+$prefix);
+			var $target = document.querySelector('#'+$prefix);
 			if($target !== null) {
 				$target.classList.add('target');
 			}
