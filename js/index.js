@@ -491,7 +491,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	hash_change['ebook-settings'] = function($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta) {
 		delete $ebook_settings_el.dataset.ebookid;
-
+		
 		$wr.get_settings(['save_reading_position'], function($settings) {
 			$ebook_settings_el.dataset.ebookid = $ebook_id;
 			$ebook_settings_el.querySelector('input[name=save_position]').checked = $settings.save_reading_position === true;
@@ -934,7 +934,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 		});
 	};
-
+	
+	
 	$ebook_settings_el.querySelector('input[name=save_position]').addEventListener('change', function($event) {
 		$wr.set_settings(
 			{
@@ -950,6 +951,23 @@ document.addEventListener('DOMContentLoaded', function() {
 		);
 	});
 	
+	$ebook_settings_el.querySelector('#reset_save_position_setting').addEventListener('click', function($event) {
+		$wr.set_settings(
+			{
+				save_reading_position: undefined, 
+				reading_position: undefined
+			}, 
+			function() {
+				$wr.get_settings(['save_reading_position'], function($settings) {
+					$ebook_settings_el.querySelector('input[name=save_position]').checked = $settings.save_reading_position === true;
+				}, $ebook_settings_el.dataset.ebookid);
+			}, 
+			function() {
+				alert('Couldn\'t save preference');
+			}.bind(this), 
+			$ebook_settings_el.dataset.ebookid
+		);
+	});
 	
 	$wr.library().addEventListener('changed', function($event) {
 		render_ebooks($event.$ebooks);
