@@ -38,7 +38,6 @@
 						case 0:
 							this.result.createObjectStore('files');
 							this.result.createObjectStore('metadata');
-						case 1:
 							this.result.createObjectStore('settings');
 					}
 				});
@@ -288,31 +287,40 @@
 			}, 
 			
 			get_settings: function($settings, $callback, $ebook_id) {
-				var 
-					$wr_settings = {
-						save_reading_position: true
-					}, 
-					$return_settings = function($ebook_settings) {
-						var $results = {};
-						for(var $i = 0; $i < $settings.length; $i++) {
-							var $name = $settings[$i];
-							$results[$name] = $ebook_settings[$name] === undefined ? $wr_settings[$name] : $ebook_settings[$name];
+				this.library().get_ebook_settings(0, function($wr_settings) {
+					var 
+						$default = {
+							save_reading_position: true
+						}, 
+						$return_settings = function($ebook_settings) {
+							var $results = {};
+							for(var $i = 0; $i < $settings.length; $i++) {
+								var $name = $settings[$i];
+								$results[$name] = $ebook_settings[$name] === undefined ? $wr_settings[$name] : $ebook_settings[$name];
+							}
+							
+							$callback($results);
+						};
+					
+					for(var $name in $default) {
+						if($wr_settings[$name] === undefined) {
+							$wr_settings[$name] = $default[$name];
 						}
-						
-						$callback($results);
-					};
+					}
+					
+					if($ebook_id === undefined) {
+						$return_settings({});
+					}
+					else {
+						this.library().get_ebook_settings($ebook_id, $return_settings);
+					}
+				}.bind(this));
 				
-				if($ebook_id === undefined) {
-					$return_settings({});
-				}
-				else {
-					this.library().get_ebook_settings($ebook_id, $return_settings);
-				}
 			}, 
 			
 			set_settings: function($settings, $callback, $error, $ebook_id) {
 				if($ebook_id === undefined) {
-					$error('not implemented');
+					this.library().set_ebook_settings(0, $settings, $callback, $error);
 				}
 				else {
 					this.library().set_ebook_settings($ebook_id, $settings, $callback, $error);

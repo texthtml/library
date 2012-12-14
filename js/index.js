@@ -2,13 +2,14 @@ document.addEventListener('DOMContentLoaded', function() {
 	"use strict";
 	
 	var 
-		$library_el = document.querySelector('#library'), 
-		$filter_el  = $library_el.querySelector('input[name=filter]'), 
-		$ebook_el   = document.querySelector('#ebook'), 
-		$toc_el     = document.querySelector('#toc'), 
+		$library_el          = document.querySelector('#library'), 
+		$settings_el         = document.querySelector('#settings'), 
+		$ebook_el            = document.querySelector('#ebook'), 
+		$toc_el              = document.querySelector('#toc'), 
 		$ebook_settings_el   = document.querySelector('#ebook-settings'), 
-		$iframe_el  = $ebook_el.querySelector('iframe'), 
-		$overlay_el = document.querySelector('#overlay');
+		$overlay_el          = document.querySelector('#overlay'), 
+		$iframe_el           = $ebook_el.querySelector('iframe'), 
+		$filter_el           = $library_el.querySelector('input[name=filter]');
 	
 	
 	zip.workerScriptsPath = 'js/vendor/zip/WebContent/'
@@ -410,6 +411,10 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 	
 	hash_change.settings = function() {
+		$wr.get_settings(['save_reading_position'], function($settings) {
+			$settings_el.querySelector('input[name=save_position]').checked = $settings.save_reading_position === true;
+		});
+		
 		if(
 			document.documentElement.dataset.installed === 'undefined' && 
 			Modernizr.apps === true
@@ -946,7 +951,20 @@ document.addEventListener('DOMContentLoaded', function() {
 		);
 	});
 	
-	$ebook_settings_el.querySelector('#reset_save_position_setting').addEventListener('click', function($event) {
+	$settings_el.querySelector('input[name=save_position]').addEventListener('change', function($event) {
+		$wr.set_settings(
+			{
+				save_reading_position: $event.target.checked
+			}, 
+			function() {}, 
+			function() {
+				alert('Couldn\'t save preference');
+				this.checked = !this.checked;
+			}.bind(this)
+		);
+	});
+	
+	$ebook_settings_el.querySelector('[name=reset_save_position_setting]').addEventListener('click', function($event) {
 		$wr.set_settings(
 			{
 				save_reading_position: undefined, 
@@ -961,6 +979,22 @@ document.addEventListener('DOMContentLoaded', function() {
 				alert('Couldn\'t save preference');
 			}.bind(this), 
 			$ebook_settings_el.dataset.ebookid
+		);
+	});
+	
+	$settings_el.querySelector('[name=reset_save_position_setting]').addEventListener('click', function($event) {
+		$wr.set_settings(
+			{
+				save_reading_position: undefined
+			}, 
+			function() {
+				$wr.get_settings(['save_reading_position'], function($settings) {
+					$settings_el.querySelector('input[name=save_position]').checked = $settings.save_reading_position === true;
+				});
+			}, 
+			function() {
+				alert('Couldn\'t save preference');
+			}.bind(this)
 		);
 	});
 	
