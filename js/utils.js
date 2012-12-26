@@ -60,8 +60,8 @@
 						$results_keys[$i][$key] = true;
 						
 						var $done = true;
-						for(var $key in $callbacks) {
-							if($results_keys[$i][$key] !== true) {
+						for(var $k in $callbacks) {
+							if($results_keys[$i][$k] !== true) {
 								$done = false;
 							}
 						}

@@ -1,8 +1,8 @@
 if(!window.ArchiveReader) {
 	
-	function trigger($request, $event, $result) {
+	function trigger($request, $event_type, $result) {
 		var $event = {
-			type: $event, 
+			type: $event_type, 
 			target: $request
 		};
 		
