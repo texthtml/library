@@ -15,8 +15,9 @@ body>div.library .content ul li:focus button,body>div.library .content ul li:foc
 body>div.library .content ul li .search-content{display:none;}
 body>div.ebook:not(.pane){left:100%;}body>div.ebook:not(.pane) header a{float:left;line-height:3rem;}
 body>div.ebook:not(.pane) header button{float:right;line-height:3rem;border:0;}
-body>div.ebook:not(.pane) .content{background:white;}
-body>div.ebook:not(.pane) iframe{display:block;border:0;width:100%;height:100%;}
+body>div.ebook:not(.pane) .content{background:white;overflow:hidden;}body>div.ebook:not(.pane) .content iframe{display:block;border:0;width:100%;height:100%;z-index:0;position:absolute;left:0px;top:0px;background:white;}body>div.ebook:not(.pane) .content iframe.under{z-index:1;}
+body>div.ebook:not(.pane) .content iframe.top{z-index:2;opacity:1;-moz-transition:opacity 250ms;}body>div.ebook:not(.pane) .content iframe.top.swiped-enough{opacity:0.85;}
+body>div.ebook:not(.pane) .content.uncover-pages iframe.top{box-shadow:0 0 5px 2px black;}
 body>div.pane.ebook.target~.ebook:not(.pane),body>div.ebook:not(.pane).target{left:0%;}
 body>div.pane.ebook.target~.library,body>div.ebook.target~.library{left:-100%;}
 body>div.pane{z-index:1;width:calc(100% - 2rem);left:-100%;background:#f5efe6;}body>div.pane>a.back{position:absolute;right:0;width:2rem;height:100%;background-color:rgba(0, 0, 0, 0.15);color:transparent;}

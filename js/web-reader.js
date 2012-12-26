@@ -290,15 +290,27 @@
 				this.library().get_ebook_settings(0, function($wr_settings) {
 					var 
 						$default = {
-							save_reading_position: true
+							save_reading_position: false, 
+							page_scrolling_direction: 'vertical', 
+							continuous_scrolling: true, 
+							uncover_scrolling: true
 						}, 
 						$return_settings = function($ebook_settings) {
 							var $results = {};
-							for(var $i = 0; $i < $settings.length; $i++) {
-								var $name = $settings[$i];
-								$results[$name] = $ebook_settings[$name] === undefined ? $wr_settings[$name] : $ebook_settings[$name];
+							if($settings !== undefined) {
+								for(var $i = 0; $i < $settings.length; $i++) {
+									var $name = $settings[$i];
+									$results[$name] = $ebook_settings[$name] === undefined ? $wr_settings[$name] : $ebook_settings[$name];
+								}
 							}
-							
+							else {
+								for(var $name in $wr_settings) {
+									$results[$name] = $wr_settings[$name];
+								}
+								for(var $name in $ebook_settings) {
+									$results[$name] = $ebook_settings[$name];
+								}
+							}
 							$callback($results);
 						};
 					

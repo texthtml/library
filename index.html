@@ -37,6 +37,14 @@
 							<span>Save reading position & propose to resume reading at saved position</span>
 							<input type="checkbox" name="save_position"/>
 						</label>
+						<label>
+							<span>page by page reading</span>
+							<input type="checkbox" name="page_by_page_reading"/>
+						</label>
+						<label>
+							<span>horizontal scrolling</span>
+							<input type="checkbox" name="horizontal_scrolling"/>
+						</label>
 					</li>
 				</ul>
 				
@@ -134,7 +142,10 @@
 			</header>
 			
 			<div class="content">
-				<iframe></iframe>
+				<iframe class="current top"></iframe>
+				<iframe class="current"></iframe>
+				<iframe class="next"></iframe>
+				<iframe class="prev"></iframe>
 			</div>
 			
 			<footer>
