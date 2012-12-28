@@ -1150,17 +1150,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			$installation.addEventListener('success', function($event) {
 				document.documentElement.dataset.installed = true;
 				document.documentElement.dataset.uptodate = true;
-				
-				alert('Web Reader install ended successfully!');
-				close_overlay();
 			});
-			
-			$installation.addEventListener('error', function($event) {
-				alert('installation-error' + this.name);
-				close_overlay();
-			});
-			
-			open_overlay('Installation in progress...');
 		}
 	};
 	
