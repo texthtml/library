@@ -1,5 +1,5 @@
 CACHE MANIFEST
-#Version 1
+#Version 2
 
 index.html
 
@@ -8,6 +8,7 @@ style/index.css
 
 js/vendor/modernizr-latest.js
 js/vendor/zip/WebContent/zip.js
+js/vendor/zip/WebContent/inflate.js
 js/vendor/jsrender/jsrender.js
 js/utils.js
 js/archivereader.js
