@@ -1,5 +1,5 @@
 (function($scope) {
-	"use strict";
+	'use strict';
 		
 	var Library = (function() {
 		
@@ -16,7 +16,7 @@
 					this.trigger('initied');
 					
 					var $transaction = $db.transaction('metadata');
-					$transaction.addEventListener('complete', function($event) {
+					$transaction.addEventListener('complete', function() {
 						this.trigger('changed', {
 							$ebooks: $ebooks
 						});
@@ -48,7 +48,7 @@
 					$identifiers = [], 
 					$transaction = $db.transaction('metadata');
 				
-				$transaction.addEventListener('complete', function($event) {
+				$transaction.addEventListener('complete', function() {
 					$callback($identifiers);
 				});
 				
@@ -67,7 +67,7 @@
 					$ebooks = {}, 
 					$transaction = $db.transaction('metadata');
 				
-				$transaction.addEventListener('complete', function($event) {
+				$transaction.addEventListener('complete', function() {
 					$callback($ebooks);
 				});
 				
@@ -84,10 +84,10 @@
 			
 			delete: function($identifier) {
 				var 
-					$transaction = $db.transaction(['metadata', 'files'], "readwrite"), 
+					$transaction = $db.transaction(['metadata', 'files'], 'readwrite'), 
 					$ebooks = [];
 				
-				$transaction.addEventListener('complete', function($event) {
+				$transaction.addEventListener('complete', function() {
 					this.trigger('deleted', {
 						$identifier: $identifier
 					});
@@ -119,7 +119,7 @@
 				$metadata.identifier.value = $identifier;
 				$metadata.type = $blob.type;
 				
-				$transaction.addEventListener('complete', function($event) {
+				$transaction.addEventListener('complete', function() {
 					this.trigger('added', {
 						$identifier: $identifier, 
 						$metadata  : $metadata
@@ -156,7 +156,7 @@
 				$metadata_request.addEventListener('success', function($event) {
 					$metadata = $event.target.result;
 				});
-				$transaction.addEventListener('complete', function($event) {
+				$transaction.addEventListener('complete', function() {
 					var 
 						$handler, 
 						$ebook;
@@ -182,7 +182,7 @@
 			get_ebook_settings: function($identifier, $callback) {
 				var $transaction = $db.transaction(['settings'], 'readonly');
 				
-				$transaction.objectStore('settings').get($identifier).addEventListener('success', function($event) {
+				$transaction.objectStore('settings').get($identifier).addEventListener('success', function() {
 					$callback(this.result || {});
 				});
 			}, 
@@ -192,13 +192,13 @@
 					$transaction = $db.transaction(['settings'], 'readwrite'), 
 					$new_settings;
 				
-				$transaction.addEventListener('complete', function($event) {
+				$transaction.addEventListener('complete', function() {
 					if(typeof $callback === 'function') {
 						$callback($new_settings);
 					}
 				}.bind(this));
 				
-				$transaction.objectStore('settings').get($identifier).addEventListener('success', function($event) {
+				$transaction.objectStore('settings').get($identifier).addEventListener('success', function() {
 					$new_settings = (this.result || {});
 					for(var $name in $settings) {
 						$new_settings[$name] = $settings[$name];
@@ -290,8 +290,8 @@
 				this.library().get_ebook_settings(0, function($wr_settings) {
 					var 
 						$default = {
-							save_reading_position: false, 
-							page_scrolling_direction: 'vertical', 
+							save_reading_position: true, 
+							page_scrolling_direction: 'horizontal', 
 							continuous_scrolling: true, 
 							uncover_scrolling: true
 						}, 

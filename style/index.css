@@ -38,3 +38,4 @@ html.apps[data-uptodate=false][data-installed=true] button#update,html.apps[data
 #opds ul button hgroup h1{font-size:1.1em;}
 .opds-feed ol{list-style:none;padding:0;}.opds-feed ol button{width:100%;padding:0;border:0;background:none;text-align:left;}.opds-feed ol button em *{vertical-align:middle;line-height:1.5em;max-height:1.5em;}
 .opds-feed ol button div{font-weight:lighter;}
+#import_ebook_opds{display:none;}

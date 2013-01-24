@@ -1,18 +1,13 @@
 {
-  "name": "Web Reader",
-  "description": "Web Reader is an EBook reader for mobile devices.",
+  "name": "Library",
+  "description": "Manage and read books.",
   "version": "201210111652", 
   
   "launch_path": "/",
-  "appcache_path": "/offline.appcache",
 
   "developer": {
     "name": "Mathieu Rochette",
     "url": "https://mathieu.rochette.cc/"
-  },
-  
-  "permissions": {
-    "systemXHR":{}
   },
   
   "icons": {
