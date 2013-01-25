@@ -220,6 +220,70 @@
 			$ebook_identifier, 
 			$ebook, 
 			$ebook_handlers = {}, 
+			$default_settings_def = [{
+				name: 'save_reading_position',
+				label: 'Remember reading position', 
+				type: 'checkbox', 
+				default_value: true
+			}, {
+				name: 'page_scrolling_direction', 
+				label: 'Page scrolling direction', 
+				type: 'radio', 
+				values: {
+					horizontal: 'Horizontal', 
+					vertical: 'Vertical'
+				}, 
+				default_value: 'horizontal', 
+				force: function($value) {
+					return $value === 'horizontal' ? {
+						general: {
+							continuous_scrolling: false
+						}
+					} : {};
+				}
+			}, {
+				name: 'continuous_scrolling', 
+				label: 'Scroll continuously', 
+				type: 'checkbox', 
+				default_value: true, 
+				force: function($value) {
+					return $value ? {
+						general: {
+							page_scrolling_direction: 'vertical'
+						}
+					} : {};
+				}
+			}, {
+				name: 'page_animation', 
+				label: 'Page animation', 
+				type: 'radio', 
+				values: {
+					slide: 'Slide', 
+					shift: 'Shift'
+				}, 
+				default_value: 'slide'
+			}], 
+			set_default_settings_def = function() {
+				window.wr = this;
+				add_settings_def.call(this, this.default_settings, 'general', 'General');
+			}, 
+			add_settings_def = function($settings_def, $category, $category_label) {
+				if(this.$settings_def === undefined) {
+					this.$settings_def = {};
+					set_default_settings_def.call(this);
+				}
+				
+				if(this.$settings_def[$category] === undefined) {
+					this.$settings_def[$category] = {
+						label: $category_label, 
+						list: $settings_def.map(function($setting_def) {
+							$setting_def.category = $category;
+							return $setting_def;
+						})
+					};
+				}
+				
+			}, 
 			open = function($ebook, $spine, $hash) {
 				this.trigger('open', {
 					$metadata: $ebook.metadata(), 
@@ -253,6 +317,10 @@
 					factory: $handler, 
 					name   : $name
 				};
+				
+				if(typeof $handler.settings_def === 'function') {
+					add_settings_def($handler.settings_def(), $name);
+				}
 			}, 
 			
 			handler: function($mime) {
@@ -286,30 +354,57 @@
 				}
 			}, 
 			
+			settings_def: function($category) {
+				if(this.$settings_def === undefined) {
+					this.$settings_def = {};
+					set_default_settings_def.call(this);
+				}
+				
+				return this.$settings_def;
+			}, 
+			
 			get_settings: function($settings, $callback, $ebook_id) {
+				var 
+					$settings_def = this.settings_def(), 
+					$default = {};
+				
+				for(var $category_id in $settings_def) {
+					for(var $i = 0; $i < $settings_def[$category_id].list.length; $i++) {
+						var $setting_def = $settings_def[$category_id].list[$i];
+						$default[$category_id + '.' + $setting_def.name] = $setting_def.default_value;
+					}
+				}
+				
+				
 				this.library().get_ebook_settings(0, function($wr_settings) {
 					var 
-						$default = {
-							save_reading_position: true, 
-							page_scrolling_direction: 'horizontal', 
-							continuous_scrolling: true, 
-							uncover_scrolling: true
-						}, 
 						$return_settings = function($ebook_settings) {
-							var $results = {};
+							var 
+								$name, 
+								$results = {};
+							
 							if($settings !== undefined) {
 								for(var $i = 0; $i < $settings.length; $i++) {
-									var $name = $settings[$i];
+									$name = $settings[$i];
 									$results[$name] = $ebook_settings[$name] === undefined ? $wr_settings[$name] : $ebook_settings[$name];
 								}
 							}
 							else {
-								for(var $name in $wr_settings) {
+								for($name in $wr_settings) {
 									$results[$name] = $wr_settings[$name];
 								}
-								for(var $name in $ebook_settings) {
+								for($name in $ebook_settings) {
 									$results[$name] = $ebook_settings[$name];
 								}
+							}
+							for(var $fullname in $results) {
+								var $category = $fullname.split('.', 2)[0];
+								$name = $fullname.slice($category.length+1);
+								if($results[$category] === undefined) {
+									$results[$category] = {};
+								}
+								$results[$category][$name] = $results[$fullname];
+								delete $results[$fullname];
 							}
 							$callback($results);
 						};
@@ -327,7 +422,6 @@
 						this.library().get_ebook_settings($ebook_id, $return_settings);
 					}
 				}.bind(this));
-				
 			}, 
 			
 			set_settings: function($settings, $callback, $error, $ebook_id) {

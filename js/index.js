@@ -66,7 +66,53 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 	
 	
-	var $wr = Object.create(WR);
+	var $wr = Object.create(WR, {
+		default_settings: {
+			value: [{
+				name: 'save_reading_position',
+				label: 'Remember reading position', 
+				type: 'checkbox', 
+				default_value: true
+			}, {
+				name: 'page_scrolling_direction', 
+				label: 'Page scrolling direction', 
+				type: 'radio', 
+				values: {
+					horizontal: 'Horizontal', 
+					vertical: 'Vertical'
+				}, 
+				default_value: 'horizontal', 
+				force: function($value) {
+					return $value === 'horizontal' ? {
+						general: {
+							continuous_scrolling: false
+						}
+					} : {};
+				}
+			}, {
+				name: 'continuous_scrolling', 
+				label: 'Scroll continuously', 
+				type: 'checkbox', 
+				default_value: true, 
+				force: function($value) {
+					return $value ? {
+						general: {
+							page_scrolling_direction: 'vertical'
+						}
+					} : {};
+				}
+			}, {
+				name: 'page_animation', 
+				label: 'Page animation', 
+				type: 'radio', 
+				values: {
+					slide: 'Slide', 
+					shift: 'Shift'
+				}, 
+				default_value: 'slide'
+			}]
+		}
+	});
 				
 				
 	var split_ebook_hash = (function() {
@@ -96,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			
 			$results = $results.map(function($str) {
 				return $str === '' ? undefined : $str;
-			})
+			});
 
 			return $results;
 		};
@@ -408,8 +454,172 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 	
 	hash_change.settings = function() {
-		$wr.get_settings(['save_reading_position'], function($settings) {
-			// $settings_el.querySelector('input[name=save_position]').checked = $settings.save_reading_position === true;
+		var 
+			$settings_el = document.querySelector('#settings .content'), 
+			$settings_def = $wr.settings_def(), 
+			setting_def = function($category, $name) {
+				if($settings_def[$category] === undefined) {
+					return undefined;
+				}
+				
+				for(var $i = 0; $i < $settings_def[$category].list.length; $i++) {
+					if($settings_def[$category].list[$i].name === $name) {
+						return $settings_def[$category].list[$i];
+					}
+				}
+			}, 
+			setting_render_value = function($category, $setting_name, $value) {
+				var $setting_def = setting_def($category, $setting_name);
+				
+				switch($setting_def.type) {
+					case 'checkbox': 
+						$settings_el.querySelector('input[name='+$setting_def.name+']').checked = $value;
+						break;
+					
+					case 'radio':
+						$settings_el.querySelector('input[name='+$setting_def.name+'][value='+$value+']').checked = true;
+						break;
+				}
+				
+				$settings_el.querySelector('[data-setting_name="'+$category+'.'+$setting_name+'"]').old_value = $value;
+			}, 
+			setting_handler = function($setting_def, $value) {
+				var handler = function($settings, $setting_def, $value) {
+					var 
+						$force = $setting_def.force ? $setting_def.force($value) : {};
+					
+					for(var $category in $force) {
+						for(var $name in $force[$category]) {
+							handler.call(this, $settings, setting_def($category, $name), $force[$category][$name]);
+						}
+					}
+					$settings[$setting_def.category+'.'+$setting_def.name] = $value;
+					
+					return $settings;
+				};
+				
+				return function($event) {
+					var 
+						$values = $value.call(this, $event), 
+						$settings = handler.call(this, {}, $setting_def, $values.new_value);
+					
+					$wr.set_settings($settings, function() {
+						for(var $fullname in $settings) {
+							var 
+								$category = $fullname.split('.', 2)[0], 
+								$name = $fullname.slice($category.length + 1);
+							
+							setting_render_value($category, $name, $settings[$fullname]);
+						}
+					}, function() {
+						console.warn('saving settings failed, should reload settings values');
+					})
+				};
+			}, 
+			$settings_list = $settings_el.querySelector('ul');
+		
+		if($settings_list === null) {
+			$settings_list = document.createElement('ul');
+			$settings_list.settings_names = [];
+			
+			for(var $category_id in $settings_def) {
+				var 
+					$category = $settings_def[$category_id], 
+					$category_el = document.createElement('li'), 
+					$category_header = document.createElement('h2'), 
+					$category_list = document.createElement('ul');
+				
+				$category_header.textContent = $category.label;
+				
+				for(var $i = 0; $i < $category.list.length; $i++) {
+					var 
+						$setting_def = $category.list[$i], 
+						$setting_el = document.createElement('li'), 
+						$setting_header = document.createElement('h3'), 
+						$setting_input, $setting_label, 
+						$setting_list, $setting_item;
+					
+					$setting_el.dataset.setting_name = $category_id + '.' + $setting_def.name;
+					$settings_list.settings_names.push($setting_el.dataset.setting_name);
+					
+					$setting_header.textContent = $setting_def.label;
+					
+					switch($setting_def.type) {
+						case 'checkbox':
+							$setting_label = document.createElement('label'), 
+							$setting_input = document.createElement('input');
+							
+							$setting_input.name = $setting_def.name;
+							$setting_input.type = $setting_def.type;
+								
+							$setting_input.input_value = $setting_el;
+							
+							$setting_input.addEventListener('change', setting_handler($setting_def, function() {
+								return {
+									new_value: this.checked, 
+									old_value: !this.checked
+								};
+							}));
+							
+							$setting_label.appendChild($setting_header);
+							$setting_label.appendChild($setting_input);
+							
+							$setting_el.appendChild($setting_label);
+							
+							break;
+						
+						case 'radio':
+							$setting_el.appendChild($setting_header);
+							$setting_list = document.createElement('ul');
+							
+							for(var $value in $setting_def.values) {
+								$setting_item = document.createElement('li');
+								$setting_label = document.createElement('label'), 
+								$setting_input = document.createElement('input');
+								
+								$setting_input.name = $setting_def.name;
+								$setting_input.type = $setting_def.type;
+								$setting_input.value = $value;
+								
+								$setting_input.input_value = $setting_el;
+								
+								$setting_input.addEventListener('change', setting_handler($setting_def, function($event) {
+									return {
+										new_value: this.value, 
+										old_value: this.input_value.old_value
+									};
+								}));
+								
+								$setting_label.textContent = $setting_def.values[$value];
+								
+								$setting_label.appendChild($setting_input);
+								$setting_item.appendChild($setting_label);
+								$setting_list.appendChild($setting_item);
+							}
+							
+							$setting_el.appendChild($setting_list);
+							
+							break;
+					}
+					
+					$category_list.appendChild($setting_el);
+				}
+				
+				$category_el.appendChild($category_header);
+				$category_el.appendChild($category_list);
+				
+				$settings_list.appendChild($category_el);
+			}
+			
+			$settings_el.appendChild($settings_list);
+		}
+		
+		$wr.get_settings($settings_list.settings_names, function($settings) {
+			for(var $category in $settings) {
+				for(var $name in $settings[$category]) {
+					setting_render_value($category, $name, $settings[$category][$name]);
+				}
+			}
 		});
 		
 		if(
@@ -445,7 +655,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			$ebook_type_select.appendChild($option);
 			var $formats = $wr.formats();
 			for(var $mime in $formats) {
-				var $option = document.createElement('option');
+				$option = document.createElement('option');
 				$option.value = $mime;
 				$option.textContent = $formats[$mime];
 				$ebook_type_select.appendChild($option);
@@ -488,10 +698,10 @@ document.addEventListener('DOMContentLoaded', function() {
 	hash_change['ebook-settings'] = function($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta) {
 		delete $ebook_settings_el.dataset.ebookid;
 		
-		$wr.get_settings(['save_reading_position'], function($settings) {
-			$ebook_settings_el.dataset.ebookid = $ebook_id;
-			// $ebook_settings_el.querySelector('input[name=save_position]').checked = $settings.save_reading_position === true;
-		}, $ebook_id);
+		// $wr.get_settings(undefined, function($settings) {
+		// 	$ebook_settings_el.dataset.ebookid = $ebook_id;
+		// 	// $ebook_settings_el.querySelector('input[name=save_position]').checked = $settings.general.save_reading_position === true;
+		// }, $ebook_id);
 	};
 	
 	hash_change.toc = function($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta) {
@@ -552,7 +762,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					$ebook_delta = $last_position.delta;
 				}
 				
-				$iframe_el.onload = $onload;
+				$iframe_el.onload = $onload; // TODO: does not work with continuous scrolling because of 'prev' insertion
+				                             // onload should not be called before $onredenred is done
 				
 				$ebook.spine($ebook_spine, function($html, $spine) {
 					var 
@@ -593,7 +804,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}, 
 			prepare_iframe = function($iframe) {
 				for(var $name in $style) {
-					$iframe.contentDocument.documentElement.style[$name] = $settings.continuous_scrolling === false ? $style[$name] : '';
+					$iframe.contentDocument.documentElement.style[$name] = $settings.general.continuous_scrolling === false ? $style[$name] : '';
 				}
 				
 				var 
@@ -605,9 +816,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						speed: null, 
 						delta: null
 					}, 
-					$iframeDeltaDirection = $settings.page_scrolling_direction === 'horizontal' ? 'left' : 'top', 
-					$scroll               = $settings.page_scrolling_direction === 'horizontal' ? 'scrollLeft' : 'scrollLeft', 
-					$eventPosition        = $settings.page_scrolling_direction === 'horizontal' ? 'screenX' : 'screenY', 
+					$iframeDeltaDirection = $settings.general.page_scrolling_direction === 'horizontal' ? 'left' : 'top', 
+					$scroll               = $settings.general.page_scrolling_direction === 'horizontal' ? 'scrollLeft' : 'scrollLeft', 
+					$eventPosition        = $settings.general.page_scrolling_direction === 'horizontal' ? 'screenX' : 'screenY', 
 					$swipe_start          = function($event) {
 						$event.preventDefault();
 						
@@ -628,7 +839,7 @@ document.addEventListener('DOMContentLoaded', function() {
 								$max_position = document_root($iframe.contentDocument)[$scroll + 'Max'], 
 								$step = $iframe.contentDocument.documentElement.clientWidth, 
 								$delta_step = $iframe.contentDocument.documentElement[
-									$settings.page_scrolling_direction === 'horizontal' ? 'clientWidth' : 'clientHeight'
+									$settings.general.page_scrolling_direction === 'horizontal' ? 'clientWidth' : 'clientHeight'
 								], 
 								$target_position = $original_position + $step * ($next ? 1 : -1), 
 								$prev_swipe = $target_position < 0, 
@@ -677,7 +888,7 @@ document.addEventListener('DOMContentLoaded', function() {
 								
 								$iframe.style[$iframeDeltaDirection] = $swipe.delta + 'px';
 								
-								if($settings.uncover_scrolling === false) {
+								if($settings.general.page_animation !== 'slide') {
 									$iframe_under_el.style[$iframeDeltaDirection] = ($swipe.delta + $delta_step * ($next ? 1 : -1)) + 'px';
 								}
 							}
@@ -689,7 +900,7 @@ document.addEventListener('DOMContentLoaded', function() {
 								$prev = $swipe.delta > 0, 
 								$iframe_under_el = $ebook_el.querySelector('iframe.under'), 
 								$delta_step = $iframe.contentDocument.documentElement[
-									$settings.page_scrolling_direction === 'horizontal' ? 'clientWidth' : 'clientHeight'
+									$settings.general.page_scrolling_direction === 'horizontal' ? 'clientWidth' : 'clientHeight'
 								], 
 								$threshold = 0.5 * $delta_step, 
 								$moved_enough = Math.abs($swipe.delta + $swipe.speed) > $threshold;
@@ -704,7 +915,7 @@ document.addEventListener('DOMContentLoaded', function() {
 									$iframe_under_el.classList.add('top');
 									$iframe.classList.remove('top');
 									
-									if($settings.save_reading_position !== false) {
+									if($settings.general.save_reading_position !== false) {
 										save_reading_position($ebook_id, $ebook_spine, $ebook_hash, $settings);
 									}
 								}
@@ -719,27 +930,27 @@ document.addEventListener('DOMContentLoaded', function() {
 						$swipe.in_progress = false;
 					};
 				
-				$iframe.contentDocument.onmousedown = $settings.continuous_scrolling === false ? $swipe_start : undefined;
-				$iframe.contentDocument.onmousemove = $settings.continuous_scrolling === false ? $swipe_move  : undefined;
-				$iframe.contentDocument.onmouseup   = $settings.continuous_scrolling === false ? $swipe_end   : undefined;
+				$iframe.contentDocument.onmousedown = $settings.general.continuous_scrolling === false ? $swipe_start : undefined;
+				$iframe.contentDocument.onmousemove = $settings.general.continuous_scrolling === false ? $swipe_move  : undefined;
+				$iframe.contentDocument.onmouseup   = $settings.general.continuous_scrolling === false ? $swipe_end   : undefined;
 			}, 
 			$iframes = $ebook_el.querySelectorAll('iframe');
 		
-		if($settings.uncover_scrolling === true) {
+		if($settings.general.page_animation === 'slide') {
 			$ebook_el.querySelector('.content').classList.add('uncover-pages');
 		}
 		else {
 			$ebook_el.querySelector('.content').classList.remove('uncover-pages');
 		}
 		
-		if($settings.continuous_scrolling === false) {
+		if($settings.general.continuous_scrolling === false) {
 			var 
 				$iframe_clone_el = $ebook_el.querySelector('iframe.current:not(.top)');
 			
 			$ebook.prev_next(hash_change.ebook.$ebook_spine_real, function($prev, $next) {
 				var 
 					$style_prev = '', 
-					$style_next = $settings.page_scrolling_direction === 'vertical' ? '<style>body {position: absolute; bottom: 0;}' : '', 
+					$style_next = $settings.general.page_scrolling_direction === 'vertical' ? '<style>body {position: absolute; bottom: 0;}' : '', 
 					$iframe_prev_el = $ebook_el.querySelector('iframe.prev'), 
 					$iframe_next_el = $ebook_el.querySelector('iframe.next');
 				
@@ -823,7 +1034,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 	
 	hash_change.ebook.init = function($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta, $settings, $iframe_el) {
-		if($settings.save_reading_position !== false) {
+		if($settings.general.save_reading_position !== false) {
 			$iframe_el.contentDocument.onscroll = function() {
 				save_reading_position($ebook_id, $ebook_spine, $ebook_hash, $settings);
 			};
@@ -845,22 +1056,22 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 	
 	hash_change.ebook.return_to_reading_position = function($settings, $ebook_id, $ebook_spine, $ebook_hash, $iframe_el) {
-		if($settings.save_reading_position) {
+		if($settings.general.save_reading_position) {
 			var 
-				$scroll = $settings.page_scrolling_direction === 'horizontal' ? 'scrollLeft' : 'scrollTop', 
+				$scroll = $settings.general.page_scrolling_direction === 'horizontal' ? 'scrollLeft' : 'scrollTop', 
 				$delta = document_root($iframe_el.contentDocument)[$scroll];
 			
 			if(
 				$ebook_spine === undefined && 
-				$settings.save_reading_position !== false && 
-				$settings.reading_position !== undefined && 
+				$settings.general.save_reading_position !== false && 
+				$settings.general.reading_position !== undefined && 
 				(
-					$settings.reading_position.spine !== $ebook_spine || 
-					$settings.reading_position.delta !== $delta
+					$settings.general.reading_position.spine !== $ebook_spine || 
+					$settings.general.reading_position.delta !== $delta
 				) && 
 				confirm('Do you want to resume reading at the position you stopped last time?')
 			) {
-				return $settings.reading_position;
+				return $settings.general.reading_position;
 			}
 		}
 		
@@ -873,7 +1084,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			hash_change.ebook.$ebook_delta !== $ebook_delta
 		) {
 			var 
-				$scrollOrigin = $settings.continuous_scrolling === false ? 'scrollLeft' : 'scrollTop', 
+				$scrollOrigin = $settings.general.continuous_scrolling === false ? 'scrollLeft' : 'scrollTop', 
 				$delta        = $ebook_delta;
 			
 			if($delta === undefined) {
@@ -889,7 +1100,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						$rect = $el.getClientRects()[0], 
 						$original_position = document_root($iframe_el.contentDocument)[$scrollOrigin];
 					
-					if($settings.continuous_scrolling === false) {
+					if($settings.general.continuous_scrolling === false) {
 						var 
 							$step = $iframe_el.contentDocument.documentElement.clientWidth;
 						
@@ -975,7 +1186,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			
 			var 
-				$scroll = $settings.continuous_scrolling === false ? 'scrollLeft' : 'scrollTop', 
+				$scroll = $settings.general.continuous_scrolling === false ? 'scrollLeft' : 'scrollTop', 
 				$iframe_el = $ebook_el.querySelector('iframe.top');
 			
 			$ebook = $ebook_id;
@@ -992,7 +1203,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					
 					$wr.set_settings(
 						{
-							reading_position: {
+							'general.reading_position': {
 								spine: $ebook_spine, 
 								delta: $delta
 							}
@@ -1280,7 +1491,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	// 		}, 
 	// 		function() {
 	// 			$wr.get_settings(['save_reading_position'], function($settings) {
-	// 				$ebook_settings_el.querySelector('input[name=save_position]').checked = $settings.save_reading_position === true;
+	// 				$ebook_settings_el.querySelector('input[name=save_position]').checked = $settings.general.save_reading_position === true;
 	// 			}, $ebook_settings_el.dataset.ebookid);
 	// 		}, 
 	// 		function() {
@@ -1297,7 +1508,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	// 		}, 
 	// 		function() {
 	// 			$wr.get_settings(['save_reading_position'], function($settings) {
-	// 				$settings_el.querySelector('input[name=save_position]').checked = $settings.save_reading_position === true;
+	// 				$settings_el.querySelector('input[name=save_position]').checked = $settings.general.save_reading_position === true;
 	// 			});
 	// 		}, 
 	// 		function() {
