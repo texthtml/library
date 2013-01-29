@@ -768,11 +768,27 @@ document.addEventListener('DOMContentLoaded', function() {
 			function($settings) {
 				var 
 					$iframe_el = $ebook_el.querySelector('iframe.top'), 
+					$rendered_callback, 
 					$onrendered = function() {
-						hash_change.ebook.init($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta, $settings, $iframe_el);
+						hash_change.ebook.init($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta, $settings, $iframe_el, function() {
+							console.log('$onrendered done');
+							$onrendered = 'done';
+							
+							if($rendered_callback !== undefined) {
+								console.log('callback');
+								$rendered_callback();
+							}
+						});
 					}, 
 					$onload = function() {
-						hash_change.ebook.move_to_hash($iframe_el, $ebook_hash, $ebook_delta, $settings);
+						if($onrendered !== 'done') {
+							console.log('$onrendered is not done yet');
+							$rendered_callback = $onload;
+						}
+						else {
+							console.log('$onrendered is done, proceding...');
+							hash_change.ebook.move_to_hash($iframe_el, $ebook_hash, $ebook_delta, $settings);
+						}
 					};
 				
 				if(
@@ -792,8 +808,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					$ebook_delta = $last_position.delta;
 				}
 				
-				$iframe_el.onload = $onload; // TODO: does not work with continuous scrolling because of 'prev' insertion
-				                             // onload should not be called before $onredenred is done
+				$iframe_el.onload = $onload;
 				
 				$ebook.spine($ebook_spine, function($html, $spine) {
 					var 
@@ -801,6 +816,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						$iframe_clone_el = $ebook_el.querySelector('iframe.current:not(.top)');
 					
 					hash_change.ebook.render($iframe_el, $html, $ebook_id);
+					// TODO should not render $iframe_clone_el here (only when continuous_scrolling === false)
 					hash_change.ebook.render($iframe_clone_el, $html, $ebook_id);
 					
 					hash_change.ebook.$ebook_id    = $ebook_id;
@@ -821,7 +837,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 	
 	
-	hash_change.ebook.init_scrolling = function($ebook, $ebook_id, $ebook_spine, $ebook_hash, $settings) {
+	hash_change.ebook.init_scrolling = function($ebook, $ebook_id, $ebook_spine, $ebook_hash, $settings, $callback) {
 		var 
 			$style = {
 				height: '100%', 
@@ -977,6 +993,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			var 
 				$iframe_clone_el = $ebook_el.querySelector('iframe.current:not(.top)');
 			
+			prepare_iframe($iframe_clone_el);
+			
 			$ebook.prev_next(hash_change.ebook.$ebook_spine_real, function($prev, $next) {
 				var 
 					$style_prev = '', 
@@ -1005,16 +1023,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				else {
 					delete $iframe_next_el.dataset.spine;
 				}
+				
+				$callback();
 			});
-			
-			prepare_iframe($iframe_clone_el);
 		}
 		else {
 			var 
-				$iframe_el = $ebook_el.querySelector('iframe.top'), 
-				$onload = $iframe_el.onload;
-			
-			$iframe_el.onload = undefined;
+				$iframe_el = $ebook_el.querySelector('iframe.top');
 			
 			if(hash_change.ebook.init_scrolling.prev === undefined) {
 				var 
@@ -1055,15 +1070,18 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				
 				if(typeof $onload === 'function') {
+					console.log('onload....');
 					$onload();
 				}
+				
+				$callback();
 			});
 		}
 		
 		Array.prototype.forEach.call($iframes, prepare_iframe);
 	};
 	
-	hash_change.ebook.init = function($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta, $settings, $iframe_el) {
+	hash_change.ebook.init = function($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta, $settings, $iframe_el, $callback) {
 		if($settings.general.save_reading_position !== false) {
 			$iframe_el.contentDocument.onscroll = function() {
 				save_reading_position($ebook_id, $ebook_spine, $ebook_hash, $settings);
@@ -1082,7 +1100,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		$ebook_el.querySelector('iframe.current').classList.add('top');
 		
-		hash_change.ebook.init_scrolling($ebook, $ebook_id, $ebook_spine, $ebook_hash, $settings);
+		hash_change.ebook.init_scrolling($ebook, $ebook_id, $ebook_spine, $ebook_hash, $settings, $callback);
 	};
 	
 	hash_change.ebook.return_to_reading_position = function($settings, $ebook_id, $ebook_spine, $ebook_hash, $iframe_el) {
