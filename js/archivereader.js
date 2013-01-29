@@ -1,6 +1,6 @@
 if(!window.ArchiveReader) {
 	
-	function trigger($request, $event_type, $result) {
+	function trigger($request, $event_type) {
 		var $event = {
 			type: $event_type, 
 			target: $request
@@ -22,9 +22,6 @@ if(!window.ArchiveReader) {
 			}
 			
 			this.$listeners[$event].push($callback);
-		}, 
-		exec: function() {
-			this.process(this);
 		}
 	};
 	
@@ -84,16 +81,20 @@ if(!window.ArchiveReader) {
 			return this.$entry[$name];
 		}), 
 		getFile: function($name) {
-			var $process = function($request) {
-				this.entry($name, function($entry) {
-					$entry.getData(new zip.BlobWriter(), function($blob) {
-						$request.result = $blob;
-						trigger($request, 'success');
-					});
-				}.bind(this));
-			}.bind(this);
+			var 
+				$request = Object.create(Request), 
+				$process = function() {
+					this.entry($name, function($entry) {
+						$entry.getData(new zip.BlobWriter(), function($blob) {
+							$request.result = $blob;
+							trigger($request, 'success');
+						});
+					}.bind(this));
+				}.bind(this);
 			
-			return Object.create(Request, {process: {value: $process}});
+			setTimeout($process, 0);
+			
+			return $request;
 		}, 
 		getFilenames: function($callback) {
 			console.warn('not implemented');
