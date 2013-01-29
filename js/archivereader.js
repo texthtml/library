@@ -85,6 +85,11 @@ if(!window.ArchiveReader) {
 				$request = Object.create(Request), 
 				$process = function() {
 					this.entry($name, function($entry) {
+						if($entry === undefined) {
+							$request.result = null;
+							trigger($request, 'error')
+							return;
+						}
 						$entry.getData(new zip.BlobWriter(), function($blob) {
 							$request.result = $blob;
 							trigger($request, 'success');
