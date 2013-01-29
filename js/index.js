@@ -1098,8 +1098,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				(
 					$settings.general.reading_position.spine !== $ebook_spine || 
 					$settings.general.reading_position.delta !== $delta
-				) && 
-				confirm('Do you want to resume reading at the position you stopped last time?')
+				)
 			) {
 				return $settings.general.reading_position;
 			}
