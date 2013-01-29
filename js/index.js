@@ -771,22 +771,18 @@ document.addEventListener('DOMContentLoaded', function() {
 					$rendered_callback, 
 					$onrendered = function() {
 						hash_change.ebook.init($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta, $settings, $iframe_el, function() {
-							console.log('$onrendered done');
 							$onrendered = 'done';
 							
 							if($rendered_callback !== undefined) {
-								console.log('callback');
 								$rendered_callback();
 							}
 						});
 					}, 
 					$onload = function() {
 						if($onrendered !== 'done') {
-							console.log('$onrendered is not done yet');
 							$rendered_callback = $onload;
 						}
 						else {
-							console.log('$onrendered is done, proceding...');
 							hash_change.ebook.move_to_hash($iframe_el, $ebook_hash, $ebook_delta, $settings);
 						}
 					};
