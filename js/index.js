@@ -66,51 +66,77 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 	
 	
+	var $default_settings = [{
+			name: 'save_reading_position',
+			label: 'Remember reading position', 
+			type: 'checkbox', 
+			default_value: true
+		}, {
+			name: 'page_scrolling_direction', 
+			label: 'Page scrolling direction', 
+			type: 'radio', 
+			values: {
+				horizontal: 'Horizontal', 
+				vertical: 'Vertical'
+			}, 
+			default_value: 'horizontal', 
+			force: function($value) {
+				return $value === 'horizontal' ? {
+					general: {
+						continuous_scrolling: false
+					}
+				} : {};
+			}
+		}, {
+			name: 'continuous_scrolling', 
+			label: 'Scroll continuously', 
+			type: 'checkbox', 
+			default_value: true, 
+			force: function($value) {
+				return $value ? {
+					general: {
+						page_scrolling_direction: 'vertical'
+					}
+				} : {};
+			}
+		}, {
+			name: 'page_animation', 
+			label: 'Page animation', 
+			type: 'radio', 
+			values: {
+				slide: 'Slide', 
+				shift: 'Shift'
+			}, 
+			default_value: 'slide'
+		}];
+	
+	if(screen.mozLockOrientation) {
+		$default_settings.push({
+			name: 'screen_orientation', 
+			label: 'Screen orientation', 
+			type: 'radio', 
+			default_value: 'portrait', 
+			values: {
+				system: 'System', 
+				portrait: 'Portrait', 
+				landscape: 'Landscape'
+			}, 
+			onchange: function($value) {
+				var ret;
+				if($value !== 'system') {
+					ret = screen.mozLockOrientation($value);
+				}
+				else {
+					ret = screen.mozUnlockOrientation();
+				}
+				console.log($value, ret);
+			}
+		});
+	}
+	
 	var $wr = Object.create(WR, {
 		default_settings: {
-			value: [{
-				name: 'save_reading_position',
-				label: 'Remember reading position', 
-				type: 'checkbox', 
-				default_value: true
-			}, {
-				name: 'page_scrolling_direction', 
-				label: 'Page scrolling direction', 
-				type: 'radio', 
-				values: {
-					horizontal: 'Horizontal', 
-					vertical: 'Vertical'
-				}, 
-				default_value: 'horizontal', 
-				force: function($value) {
-					return $value === 'horizontal' ? {
-						general: {
-							continuous_scrolling: false
-						}
-					} : {};
-				}
-			}, {
-				name: 'continuous_scrolling', 
-				label: 'Scroll continuously', 
-				type: 'checkbox', 
-				default_value: true, 
-				force: function($value) {
-					return $value ? {
-						general: {
-							page_scrolling_direction: 'vertical'
-						}
-					} : {};
-				}
-			}, {
-				name: 'page_animation', 
-				label: 'Page animation', 
-				type: 'radio', 
-				values: {
-					slide: 'Slide', 
-					shift: 'Shift'
-				}, 
-				default_value: 'slide'
-			}]
+			value: $default_settings
 		}
 	});
 				
@@ -494,6 +520,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					}
 					$settings[$setting_def.category+'.'+$setting_def.name] = $value;
+					$setting_def.onchange && $setting_def.onchange($value);
 					
 					return $settings;
 				};
@@ -507,9 +534,12 @@ document.addEventListener('DOMContentLoaded', function() {
 						for(var $fullname in $settings) {
 							var 
 								$category = $fullname.split('.', 2)[0], 
-								$name = $fullname.slice($category.length + 1);
+								$name = $fullname.slice($category.length + 1), 
+								$setting_def = setting_def($category, $name);
 							
-							setting_render_value($category, $name, $settings[$fullname]);
+							if($settings_el.querySelector('[data-setting_name="'+$category+'.'+$name+'"]').value !== $settings[$fullname]) {
+								setting_render_value($category, $name, $settings[$fullname]);
+							}
 						}
 					}, function() {
 						console.warn('saving settings failed, should reload settings values');
