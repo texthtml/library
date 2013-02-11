@@ -549,6 +549,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			$settings_list = document.createElement('ul');
 			$settings_list.settings_names = [];
 			
+			$settings_list.classList.add('settings-list');
+			
 			for(var $category_id in $settings_def) {
 				var 
 					$category = $settings_def[$category_id], 
@@ -568,6 +570,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						$disabled = typeof $setting_def.disabled === 'string';
 					
 					$setting_el.classList.add('type-' + $setting_def.type);
+					$setting_el.classList.add('setting-item');
 					$setting_el.dataset.setting_name = $category_id + '.' + $setting_def.name;
 					$settings_list.settings_names.push($setting_el.dataset.setting_name);
 					

@@ -24,7 +24,7 @@ body>div.pane{z-index:1;width:calc(100% - 2rem);left:-100%;background:#f5efe6;}b
 body>div.pane.target{left:0%;}body>div.pane.target>a.back{right:-2rem;}
 body>div.pane.target~.library{left:calc(100% - 2rem);}
 body>div.pane.target.ebook~.ebook:not(.pane){left:calc(100% - 2rem);}
-body>div.pane>div.content{bottom:0;padding:0 1rem;width:calc(100% - 2rem);}
+body>div.pane>div.content{bottom:0;padding:0 1rem;}
 body>div.pane.toc navLabel{color:blue;cursor:pointer;}
 body>div.pane.toc navLabel:hover{text-decoration:underline;}
 body>div.pane.toc navPoint{display:block;padding-left:1em;}
@@ -39,3 +39,13 @@ html.apps[data-uptodate=false][data-installed=true] button#update,html.apps[data
 .opds-feed ol{list-style:none;padding:0;}.opds-feed ol button{width:100%;padding:0;border:0;background:none;text-align:left;}.opds-feed ol button em *{vertical-align:middle;line-height:1.5em;max-height:1.5em;}
 .opds-feed ol button div{font-weight:lighter;}
 #import_ebook_opds{display:none;}
+#settings .content{background:#ccc;padding:0;}
+#settings ul{margin:0;padding:0;list-style:none;width:100%;}#settings ul h2,#settings ul h3{font-size:1em;font-weight:normal;margin:0;display:inline;}
+#settings ul h2{margin-left:1rem;}
+#settings ul h2,#settings ul h3,#settings ul label{line-height:2rem;}
+#settings ul.settings-list{background:#aaa;}#settings ul.settings-list>li>ul{background:#ccc;}
+#settings ul.settings-list>li>ul{border-top:2px solid #888;}
+#settings ul li{clear:both;overflow:auto;}#settings ul li label{display:block;}#settings ul li label input{float:left;margin:0.2em;}
+#settings ul li.setting-item{border-bottom:1px solid #888;padding:0 1rem;}#settings ul li.setting-item li{padding:0 .5rem;border-bottom:none;border-top:1px solid #ddd;}
+#settings ul li.disabled{color:#5E5E5E;}#settings ul li.disabled h3 span{font-style:italic;color:#3C3C3C;}#settings ul li.disabled h3 span:before{content:' (';}
+#settings ul li.disabled h3 span:after{content:')';}

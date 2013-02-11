@@ -283,7 +283,6 @@ body > div {
 		& > div.content {
 			bottom: 0;
 			padding: 0 1rem;
-			width: ~`"calc(100% - @{panebackw})"`;
 		}
 		
 		&.toc {
@@ -406,4 +405,86 @@ html.apps[data-installed=false] button#install {
 
 #import_ebook_opds {
 	display: none;
+}
+
+#settings {
+	
+	.content {
+		background: #ccc;
+		padding: 0;
+	}
+	
+	ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		width: 100%;
+		
+		h2, h3 {
+			font-size: 1em;
+			font-weight: normal;
+			margin: 0;
+			display: inline;
+		}
+		
+		h2 {
+			margin-left: 1rem;
+		}
+		
+		h2, h3, label {
+			line-height: 2rem;
+		}
+		
+		&.settings-list {
+			background: #aaa;
+			& > li > ul {
+				background: #ccc;
+			}
+			& > li > ul {
+				border-top: 2px solid #888;
+			}
+		}
+		
+		li {
+			
+			label {
+				display: block;
+				
+				input {
+					float: left;
+					margin: 0.2em;
+				}
+			}
+			
+			clear: both;
+			overflow: auto;
+			
+			&.setting-item {
+				border-bottom: 1px solid #888;
+				padding: 0 1rem;
+				
+				li {
+					padding: 0 .5rem;
+					border-bottom: none;
+					border-top: 1px solid #ddd;
+				}
+			}
+		}
+		
+		li.disabled {
+			color: #5E5E5E;
+			
+			h3 span {
+				font-style: italic;
+				color: #3C3C3C;
+				
+				&:before {
+					content: ' (';
+				}
+				&:after {
+					content: ')';
+				}
+			}
+		}
+	}
 }
