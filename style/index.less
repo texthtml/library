@@ -260,12 +260,15 @@ body > div {
 			right: 0;
 			width: @panebackw;
 			height: 100%;
-			background-color: rgba(0, 0, 0, 0.15);
+			background-color: #bcbcbc;
 			color: transparent;
+			opacity: 0.25;
 		}
 		
 		&.target {
 			left: 0%;
+			z-index: 3;
+			position: absolute;
 			
 			& > a.back {
 				right: -@panebackw;

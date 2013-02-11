@@ -20,8 +20,8 @@ body>div.ebook:not(.pane) .content iframe.top{z-index:2;opacity:1;-moz-transitio
 body>div.ebook:not(.pane) .content.uncover-pages iframe.top{box-shadow:0 0 5px 2px black;}
 body>div.pane.ebook.target~.ebook:not(.pane),body>div.ebook:not(.pane).target{left:0%;}
 body>div.pane.ebook.target~.library,body>div.ebook.target~.library{left:-100%;}
-body>div.pane{z-index:1;width:calc(100% - 2rem);left:-100%;background:#f5efe6;}body>div.pane>a.back{position:absolute;right:0;width:2rem;height:100%;background-color:rgba(0, 0, 0, 0.15);color:transparent;}
-body>div.pane.target{left:0%;}body>div.pane.target>a.back{right:-2rem;}
+body>div.pane{z-index:1;width:calc(100% - 2rem);left:-100%;background:#f5efe6;}body>div.pane>a.back{position:absolute;right:0;width:2rem;height:100%;background-color:#bcbcbc;color:transparent;opacity:0.25;}
+body>div.pane.target{left:0%;z-index:3;position:absolute;}body>div.pane.target>a.back{right:-2rem;}
 body>div.pane.target~.library{left:calc(100% - 2rem);}
 body>div.pane.target.ebook~.ebook:not(.pane){left:calc(100% - 2rem);}
 body>div.pane>div.content{bottom:0;padding:0 1rem;}
