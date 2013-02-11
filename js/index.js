@@ -108,10 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				shift: 'Shift'
 			}, 
 			default_value: 'slide'
-		}];
-	
-	if(screen.mozLockOrientation) {
-		$default_settings.push({
+		}, {
 			name: 'screen_orientation', 
 			label: 'Screen orientation', 
 			type: 'radio', 
@@ -130,9 +127,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					ret = screen.mozUnlockOrientation();
 				}
 				console.log($value, ret);
-			}
-		});
-	}
+			}, 
+			disabled: screen.mozLockOrientation ? 'Not supported on your device' : false
+		}];
 	
 	var $wr = Object.create(WR, {
 		default_settings: {
@@ -567,12 +564,22 @@ document.addEventListener('DOMContentLoaded', function() {
 						$setting_el = document.createElement('li'), 
 						$setting_header = document.createElement('h3'), 
 						$setting_input, $setting_label, 
-						$setting_list, $setting_item;
+						$setting_list, $setting_item, 
+						$disabled = typeof $setting_def.disabled === 'string';
 					
+					$setting_el.classList.add('type-' + $setting_def.type);
 					$setting_el.dataset.setting_name = $category_id + '.' + $setting_def.name;
 					$settings_list.settings_names.push($setting_el.dataset.setting_name);
 					
 					$setting_header.textContent = $setting_def.label;
+					
+					if($disabled) {
+						var $disabled_el = document.createElement('span');
+						$disabled_el.textContent = $setting_def.disabled;
+						$setting_header.appendChild($disabled_el);
+						
+						$setting_el.classList.add('disabled');
+					}
 					
 					switch($setting_def.type) {
 						case 'checkbox':
@@ -581,6 +588,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							
 							$setting_input.name = $setting_def.name;
 							$setting_input.type = $setting_def.type;
+							$setting_input.disabled = $disabled;
 								
 							$setting_input.input_value = $setting_el;
 							
@@ -610,6 +618,7 @@ document.addEventListener('DOMContentLoaded', function() {
 								$setting_input.name = $setting_def.name;
 								$setting_input.type = $setting_def.type;
 								$setting_input.value = $value;
+								$setting_input.disabled = $disabled;
 								
 								$setting_input.input_value = $setting_el;
 								
