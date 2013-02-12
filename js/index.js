@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				horizontal: 'Horizontal', 
 				vertical: 'Vertical'
 			}, 
-			default_value: 'horizontal', 
+			default_value: 'vertical', 
 			force: function($value) {
 				return $value === 'horizontal' ? {
 					general: {
