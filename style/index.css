@@ -49,3 +49,4 @@ html.apps[data-uptodate=false][data-installed=true] button#update,html.apps[data
 #settings ul li.setting-item{border-bottom:1px solid #888;padding:0 1rem;}#settings ul li.setting-item li{padding:0 .5rem;border-bottom:none;border-top:1px solid #ddd;}
 #settings ul li.disabled{color:#5E5E5E;}#settings ul li.disabled h3 span{font-style:italic;color:#3C3C3C;}#settings ul li.disabled h3 span:before{content:' (';}
 #settings ul li.disabled h3 span:after{content:')';}
+#fullscreen{display:none;}
