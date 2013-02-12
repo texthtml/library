@@ -877,14 +877,16 @@ document.addEventListener('DOMContentLoaded', function() {
 						$event.preventDefault();
 						
 						$swipe.began = true;
-						$swipe.last = $swipe.origin = $event[$eventPosition];
+						$swipe.last = $swipe.origin = $event[$eventPosition] || $event.touches[0][$eventPosition];
 						$swipe.delta = $swipe.speed = 0;
 					}, 
 					$swipe_move           = function($event) {
 						if($swipe.began) {
 							$event.preventDefault();
-							$swipe.speed = $event[$eventPosition] - $swipe.last;
-							$swipe.last = $event[$eventPosition];
+							
+							var $position = $event[$eventPosition] || $event.touches[0][$eventPosition];
+							$swipe.speed = $position - $swipe.last;
+							$swipe.last = $position;
 							$swipe.delta = $swipe.last - $swipe.origin;
 							
 							var 
@@ -984,9 +986,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						$swipe.in_progress = false;
 					};
 				
-				$iframe.contentDocument.onmousedown = $settings.general.continuous_scrolling === false ? $swipe_start : undefined;
-				$iframe.contentDocument.onmousemove = $settings.general.continuous_scrolling === false ? $swipe_move  : undefined;
-				$iframe.contentDocument.onmouseup   = $settings.general.continuous_scrolling === false ? $swipe_end   : undefined;
+				$iframe.contentDocument.ontouchstart = $iframe.contentDocument.onmousedown = $settings.general.continuous_scrolling === false ? $swipe_start : undefined;
+				$iframe.contentDocument.ontouchmove  = $iframe.contentDocument.onmousemove = $settings.general.continuous_scrolling === false ? $swipe_move  : undefined;
+				$iframe.contentDocument.ontouchcancel = $iframe.contentDocument.ontouchleave = $iframe.contentDocument.ontouchend   = $iframe.contentDocument.onmouseup   = $settings.general.continuous_scrolling === false ? $swipe_end   : undefined;
 			}, 
 			$iframes = $ebook_el.querySelectorAll('iframe');
 		
