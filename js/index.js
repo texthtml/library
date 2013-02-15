@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 				console.log($value, ret);
 			}, 
-			disabled: screen.mozLockOrientation ? 'Not supported on your device' : false
+			disabled: screen.mozLockOrientation === undefined ? 'Not supported on your device' : false
 		}];
 	
 	var $wr = Object.create(WR, {
