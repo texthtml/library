@@ -29,7 +29,7 @@ body>div.pane.toc navLabel{color:blue;cursor:pointer;}
 body>div.pane.toc navLabel:hover{text-decoration:underline;}
 body>div.pane.toc navPoint{display:block;padding-left:1em;}
 body>div.pane.toc navPoint navPoint navPoint,body>div.pane.toc pageList{display:none;}
-body>div.overlay{z-index:2;background:#d4dde4;overflow:auto;}body>div.overlay.loading{background-image:url('../images/loading.gif');background-position:center;background-repeat:no-repeat;text-align:center;line-height:50vh;}body>div.overlay.loading .close-overlay{position:absolute;left:0;top:0;}
+body>div.overlay{z-index:3;background:#d4dde4;overflow:auto;}body>div.overlay.loading{background-image:url('../images/loading.gif');background-position:center;background-repeat:no-repeat;text-align:center;line-height:50vh;}body>div.overlay.loading .close-overlay{position:absolute;left:0;top:0;}
 html.no-fileinput #import_ebook_input,html.no-system-xhr #import_ebook_internet{display:none;}
 button#update,button#install{display:none;}
 html.apps[data-uptodate=false][data-installed=true] button#update,html.apps[data-installed=false] button#install{display:block;width:100%;border:0;line-height:3rem;}
