@@ -1125,11 +1125,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				$continuous_scrolling = $settings.general.continuous_scrolling, 
 				$horizontal = $settings.general.page_scrolling_direction === 'horizontal' || $continuous_scrolling === false, 
 				$scroll = $horizontal ? 'scrollLeft' : 'scrollTop', 
-				$doc = $iframe_el.contentDocument, 
-				$xpath = $settings.general.reading_position.element, 
-				$rect = $settings.general.reading_position.rect, 
-				$pdelta = Math.min($rect.left / $rect.width, $rect.top / $rect.height), 
-				$delta = document_root($doc)[$scroll];
+				$doc = $iframe_el.contentDocument;
 			
 			if(
 				$ebook_spine === undefined && 
@@ -1140,6 +1136,12 @@ document.addEventListener('DOMContentLoaded', function() {
 					$settings.general.reading_position.delta !== $delta
 				)
 			) {
+				var 
+					$xpath = $settings.general.reading_position.element, 
+					$rect = $settings.general.reading_position.rect, 
+					$pdelta = Math.min($rect.left / $rect.width, $rect.top / $rect.height), 
+					$delta = document_root($doc)[$scroll];
+				
 				return {
 					spine: $settings.general.reading_position.spine, 
 					onrendered: function() {
