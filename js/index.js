@@ -781,6 +781,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				var 
 					$iframe_el = $ebook_el.querySelector('iframe.top'), 
 					$rendered_callback, 
+					$move_callback, 
 					$onrendered = function() {
 						hash_change.ebook.init($ebook, $ebook_id, $ebook_spine, $ebook_hash, $ebook_delta, $settings, $iframe_el, function() {
 							$onrendered = 'done';
@@ -796,6 +797,10 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 						else {
 							hash_change.ebook.move_to_hash($iframe_el, $ebook_hash, $ebook_delta, $settings);
+							
+							if($move_callback !== undefined) {
+								$move_callback();
+							}
 						}
 					};
 				
@@ -812,8 +817,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					$last_position = hash_change.ebook.return_to_reading_position($settings, $ebook_id, $ebook_spine, $ebook_hash, $iframe_el);
 				
 				if($last_position !== false) {
-					$ebook_spine = $last_position.spine;
-					$ebook_delta = $last_position.delta;
+					$ebook_spine   = $last_position.spine;
+					$ebook_delta   = $last_position.delta;
+					$move_callback = $last_position.onrendered;
 				}
 				
 				$iframe_el.onload = $onload;
@@ -1116,8 +1122,14 @@ document.addEventListener('DOMContentLoaded', function() {
 	hash_change.ebook.return_to_reading_position = function($settings, $ebook_id, $ebook_spine, $ebook_hash, $iframe_el) {
 		if($settings.general.save_reading_position) {
 			var 
-				$scroll = $settings.general.page_scrolling_direction === 'horizontal' ? 'scrollLeft' : 'scrollTop', 
-				$delta = document_root($iframe_el.contentDocument)[$scroll];
+				$continuous_scrolling = $settings.general.continuous_scrolling, 
+				$horizontal = $settings.general.page_scrolling_direction === 'horizontal' || $continuous_scrolling === false, 
+				$scroll = $horizontal ? 'scrollLeft' : 'scrollTop', 
+				$doc = $iframe_el.contentDocument, 
+				$xpath = $settings.general.reading_position.element, 
+				$rect = $settings.general.reading_position.rect, 
+				$pdelta = Math.min($rect.left / $rect.width, $rect.top / $rect.height), 
+				$delta = document_root($doc)[$scroll];
 			
 			if(
 				$ebook_spine === undefined && 
@@ -1128,7 +1140,24 @@ document.addEventListener('DOMContentLoaded', function() {
 					$settings.general.reading_position.delta !== $delta
 				)
 			) {
-				return $settings.general.reading_position;
+				return {
+					spine: $settings.general.reading_position.spine, 
+					onrendered: function() {
+						var 
+							$element = $doc.evaluate($xpath, $doc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue, 
+							$rect = element_rect($element), 
+							$delta = document_root($doc)[$scroll] + $rect[$horizontal ? 'left' : 'top'] - $pdelta * $rect[$horizontal ? 'width' : 'height'];
+						
+						
+						if($continuous_scrolling === false) {
+							var $step = $doc.documentElement.clientWidth;
+							
+							$delta = Math.floor($delta / $step) * $step;
+						}
+						
+						document_root($doc)[$scroll] = $delta;
+					}
+				};
 			}
 		}
 		
@@ -1231,7 +1260,76 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	hash_change.ebook.$ebook_spine = null;
 
-	var save_reading_position = (function() {
+	var 
+		element_rect = function($el) {
+	        var $rect = $el;
+	        
+	        if($el.nodeType === 3) {
+	            $rect = document.createRange();
+	            $rect.selectNode($el);
+	        }
+	        
+	        return $rect.getBoundingClientRect();
+		}, 
+		first_element_position = function($doc) {
+		    var 
+		        $viewport = {
+		            top: $doc.documentElement.scrollTop, 
+		            left: $doc.documentElement.scrollLeft
+		        }, 
+		        $el = null, 
+		        $el_rect = null, 
+		        $e = $doc.body;
+		    
+		    do {
+		        var $rect = element_rect($e);
+		        
+		        if($el ===null || ($rect.left + $rect.width > 0 && $rect.top + $rect.height > 0)) {
+		            $el = $e;
+		            $el_rect = $rect;
+		            
+		            $e = $el.firstChild;
+		            continue;
+		        }
+		        $e = $e.nextSibling;
+		    } while($e !== null);
+		    
+		    return {
+		        element: $el, 
+		        rect: $el_rect
+		    };
+		}, 
+		el_to_xpath = function($el) {
+		    var xpath = [];
+		    
+		    while($el.parentNode !== null) {
+		        if($el.id) {
+		            xpath.push('*[@id="' + $el.id + '"]');
+		            $el = {parentNode: null};
+		        }
+		        else {
+		            if($el.nodeType) {
+		                var i = Array.prototype.reduce.call($el.parentNode.childNodes, (function(nodeName) {
+		                    var c = -1;
+		                    return function(v, e) {
+		                        if(e.nodeName === nodeName) {
+		                            c++;
+		                        }
+		                        return e === $el ? c : v;
+		                    };
+		                }) ($el.nodeName), null);
+		                xpath.unshift(($el.nodeType === 3 ? 'text()' : $el.nodeName) + (i ? ('[' + (i+1) + ']') : ''));
+		            }
+		            else {
+		                xpath.unshift('text()');
+		            }
+		            $el = $el.parentNode;
+		        }
+		    }
+		    
+		    return '/' + xpath.join('/');
+		}, 
+		save_reading_position = (function() {
 		var 
 			$ebook, 
 			$timeout = null;
@@ -1256,13 +1354,21 @@ document.addEventListener('DOMContentLoaded', function() {
 							$ebook_id, 
 							($ebook_spine !== undefined ? $ebook_spine : '') + ($ebook_hash !== undefined ? '#' + $ebook_hash : ''), 
 							$delta
-						);
+						), 
+						$position = first_element_position($iframe_el.contentDocument);
 					
 					$wr.set_settings(
 						{
 							'general.reading_position': {
 								spine: $ebook_spine, 
-								delta: $delta
+								delta: $delta, 
+								element: el_to_xpath($position.element), 
+								rect: {
+									left:   $position.rect.left, 
+									top:    $position.rect.top, 
+									width:  $position.rect.width, 
+									height: $position.rect.height, 
+								}
 							}
 						}, 
 						function() {}, 
