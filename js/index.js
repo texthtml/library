@@ -1128,12 +1128,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				$doc = $iframe_el.contentDocument;
 			
 			if(
-				$ebook_spine === undefined && 
 				$settings.general.save_reading_position !== false && 
 				$settings.general.reading_position !== undefined && 
 				(
-					$settings.general.reading_position.spine !== $ebook_spine || 
-					$settings.general.reading_position.delta !== $delta
+					$settings.general.reading_position.spine === $ebook_spine || 
+					$ebook_spine === undefined
 				)
 			) {
 				var 
