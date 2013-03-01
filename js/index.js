@@ -1733,20 +1733,20 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	// OPDS.register('www.smashwords.com/atom');
 	// OPDS.register('http://manybooks.net/opds/');
-	// OPDS.register('www.feedbooks.com');
+	OPDS.register('http://www.feedbooks.com');
 	// OPDS.register('http://cops-demo.slucas.fr/');
-	// OPDS.register('');
-	// OPDS.register('m.gutenberg.org');
+	// OPDS.register('http://m.gutenberg.org');
+	OPDS.register(location.origin);
 	
 	$wr.init();
 });
 
 var render_template = function($template_name, $data, $callback) {
-	if(jsviews.render[$template_name] === undefined) {
+	if(jsviews.render[$template_name] === undefined || true) {
 		var 
 			$xhr = new XMLHttpRequest();
 		
-		$xhr.open('GET', 'templates/' + $template_name + '.html');
+		$xhr.open('GET', 'templates/' + $template_name + '.html?rand='+Math.random());
 		
 		$xhr.onreadystatechange = function() {
 			if(this.readyState === 4) {

@@ -28,65 +28,49 @@
 		{{/selector}}
 		
 		{{selectorAll 'entry' feed}}
-			{{ifselector 'link[type="application/atom+xml;profile=opds-catalog;kind=navigation"]:not([rel=related]),link[type="application/atom+xml;profile=opds-catalog"]:not([rel=related])'}}
-				<li>
-					<button data-next="{{selector 'link[type="application/atom+xml;profile=opds-catalog"]'}}
-						{{>getAttribute('href')}}
-					{{/selector}}">
-						<em>
-							{{selector 'link[type="image/png"]'}}
-								<img src="{{>getAttribute('href')}}"/>
-							{{/selector}}
-							{{selector 'title'}}<span>{{>textContent}}</span>{{/selector}}
-						</em>
-						{{selector 'content[type=text]'}}
-							<div>{{>textContent}}</div>
-						{{/selector}}
-						{{selector 'content[type=xhtml]'}}
-							<div>{{selector '*'}}{{:innerHTML}}{{/selector}}</div>
-						{{/selector}}
-					</button>
-				</li>
-			{{/ifselector}}
-			
-			{{ifselector 'link[rel="http://opds-spec.org/acquisition"]'}}
-				<li>
+			<li>
+				{{selector 'link[type="application/atom+xml;profile=opds-catalog"],link[type="application/atom+xml;profile=opds-catalog;kind=navigation"],link[type="application/atom+xml;type=entry;profile=opds-catalog"],link[type="application/atom+xml"],link[type="application/atom+xml;profile=opds-catalog;kind=acquisition"]'}}
+					<button data-next="{{>getAttribute('href')}}">
+				{{/selector}}
 					<em>
 						{{selector 'link[type="image/png"]'}}
 							<img src="{{>getAttribute('href')}}"/>
 						{{/selector}}
 						{{selector 'title'}}<span>{{>textContent}}</span>{{/selector}}
 					</em>
-					{{selector 'content[type=text]'}}
-						<div>{{>textContent}}</div>
-					{{/selector}}
-					{{selector 'content[type=xhtml]'}}
-						<div>{{selector '*'}}{{:innerHTML}}{{/selector}}</div>
-					{{/selector}}
-					<hr/>
+				{{selector 'link[type="application/atom+xml;profile=opds-catalog"],link[type="application/atom+xml"]'}}
+					</button>
+				{{/selector}}
+				{{selector 'content[type=text]'}}
+					<div>{{>textContent}}</div>
+				{{/selector}}
+				{{selector 'content[type=xhtml]'}}
+					<div>{{selector '*'}}{{:innerHTML}}{{/selector}}</div>
+				{{/selector}}
+
+				<hr/>
+				<ul>
+				{{selectorAll 'link'}}
+					{{if ~ebook_formats()[getAttribute('type')]}}
+						<button 
+							data-ebook-uri="{{>getAttribute('href')}}" 
+							data-type="{{>getAttribute('type')}}"
+						>Download eBook in {{>~ebook_formats()[getAttribute('type')]}}</button>
+					{{/if}}
+				{{/selectorAll}}
+				</ul>
+				
+				{{ifselector 'link[type="application/atom+xml;profile=opds-catalog;kind=navigation"][rel=related],link[type="application/atom+xml;profile=opds-catalog"][rel=related]'}}
+					<h2>Related books</h2>
 					<ul>
-					{{selectorAll 'link[rel="http://opds-spec.org/acquisition"]'}}
-						{{if ~ebook_formats()[getAttribute('type')]}}
-							<button 
-								data-ebook-uri="{{>getAttribute('href')}}" 
-								data-type="{{>getAttribute('type')}}"
-							>Download eBook in {{>~ebook_formats()[getAttribute('type')]}}</button>
-						{{/if}}
+					{{selectorAll 'link[type="application/atom+xml;profile=opds-catalog;kind=navigation"][rel=related],link[type="application/atom+xml;profile=opds-catalog"][rel=related]'}}
+						<li>
+							<button data-next="{{>getAttribute('href')}}">{{>getAttribute('title')}}</button>
+						</li>
 					{{/selectorAll}}
 					</ul>
-					
-					{{ifselector 'link[type="application/atom+xml;profile=opds-catalog;kind=navigation"][rel=related],link[type="application/atom+xml;profile=opds-catalog"][rel=related]'}}
-						<h2>Related books</h2>
-						<ul>
-						{{selectorAll 'link[type="application/atom+xml;profile=opds-catalog;kind=navigation"][rel=related],link[type="application/atom+xml;profile=opds-catalog"][rel=related]'}}
-							<li>
-								<button data-next="{{>getAttribute('href')}}">{{>getAttribute('title')}}</button>
-							</li>
-						{{/selectorAll}}
-						</ul>
-					{{/ifselector}}
-				</li>
-			{{/ifselector}}
+				{{/ifselector}}
+			</li>
 		{{/selectorAll}}
 		
 		{{selector 'link[rel=next]' feed}}

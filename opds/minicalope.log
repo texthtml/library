@@ -1,0 +1,174 @@
+2013-02-25 11:10:08 local INFO SCAN Scanning ../books [MODE=rebuild]
+2013-02-25 11:10:08 local INFO SCAN * Scanning langDir 'en'
+2013-02-25 11:10:08 local INFO SCAN   + Scanning genre 'Philosophy'
+2013-02-25 11:10:08 local INFO SCAN   + Scanning genre 'Fantasy'
+2013-02-25 11:10:08 local INFO SCAN   + Scanning genre 'Epic Novel'
+2013-02-25 11:10:08 local INFO SCAN * Updating database
+2013-02-25 11:10:08 local INFO SCAN   + Truncating Tables
+2013-02-25 11:10:08 local INFO SCAN   + Inserting Tags (3)
+2013-02-25 11:10:08 local INFO SCAN   + Inserting Authors (3)
+2013-02-25 11:10:08 local INFO SCAN   + Inserting Books (3)
+2013-02-25 11:10:08 local ERROR SCAN ! Error inserting book "../books/en/Philosophy/Plato/pg1497" (author: "Plato", genre "Philosophy")
+2013-02-25 11:10:08 local ERROR  ! ()
+2013-02-25 11:10:08 local ERROR SCAN ! Error inserting book "../books/en/Fantasy/Lewis Carroll/pg28885-images" (author: "Lewis Carroll", genre "Fantasy")
+2013-02-25 11:10:08 local ERROR  ! ()
+2013-02-25 11:10:08 local ERROR SCAN ! Error inserting book "../books/en/Epic Novel/Victor Hugo/pg135-images" (author: "Victor Hugo", genre "Epic Novel")
+2013-02-25 11:10:08 local ERROR  ! ()
+2013-02-25 11:10:08 local INFO SCAN     added: 3, moved: 0, merged: 0
+2013-02-25 11:10:08 local INFO SCAN     eBook files: 0
+2013-02-25 11:10:08 local INFO SCAN * Done
+2013-02-25 11:12:12 local INFO SCAN Scanning ../books [MODE=rebuild]
+2013-02-25 11:12:12 local INFO SCAN * Scanning langDir 'en'
+2013-02-25 11:12:12 local INFO SCAN   + Scanning genre 'Philosophy'
+2013-02-25 11:12:12 local INFO SCAN   + Scanning genre 'Fantasy'
+2013-02-25 11:12:12 local INFO SCAN   + Scanning genre 'Epic Novel'
+2013-02-25 11:12:12 local INFO SCAN * Updating database
+2013-02-25 11:12:12 local INFO SCAN   + Truncating Tables
+2013-02-25 11:12:12 local INFO SCAN   + Inserting Tags (3)
+2013-02-25 11:12:12 local INFO SCAN   + Inserting Authors (3)
+2013-02-25 11:12:12 local INFO SCAN   + Inserting Books (3)
+2013-02-25 11:12:12 local ERROR SCAN ! Error inserting book "../books/en/Philosophy/Plato/pg1497" (author: "Plato", genre "Philosophy")
+2013-02-25 11:12:12 local ERROR  ! ()
+2013-02-25 11:12:12 local ERROR SCAN ! Error inserting book "../books/en/Fantasy/Lewis Carroll/pg28885-images" (author: "Lewis Carroll", genre "Fantasy")
+2013-02-25 11:12:12 local ERROR  ! ()
+2013-02-25 11:12:12 local ERROR SCAN ! Error inserting book "../books/en/Epic Novel/Victor Hugo/pg135-images" (author: "Victor Hugo", genre "Epic Novel")
+2013-02-25 11:12:12 local ERROR  ! ()
+2013-02-25 11:12:12 local INFO SCAN     added: 3, moved: 0, merged: 0
+2013-02-25 11:12:12 local INFO SCAN     eBook files: 0
+2013-02-25 11:12:12 local INFO SCAN * Done
+2013-02-25 11:13:24 local INFO SCAN Scanning ../books [MODE=rebuild]
+2013-02-25 11:13:24 local INFO SCAN * Scanning langDir 'en'
+2013-02-25 11:13:24 local INFO SCAN   + Scanning genre 'Philosophy'
+2013-02-25 11:13:24 local INFO SCAN   + Scanning genre 'Fantasy'
+2013-02-25 11:13:24 local INFO SCAN   + Scanning genre 'Epic Novel'
+2013-02-25 11:13:24 local INFO SCAN * Updating database
+2013-02-25 11:13:24 local INFO SCAN   + Truncating Tables
+2013-02-25 11:13:24 local INFO SCAN   + Inserting Tags (3)
+2013-02-25 11:13:24 local INFO SCAN   + Inserting Authors (3)
+2013-02-25 11:13:24 local INFO SCAN   + Inserting Books (3)
+2013-02-25 11:13:24 local ERROR SCAN ! Error inserting book "../books/en/Philosophy/Plato/pg1497" (author: "Plato", genre "Philosophy")
+2013-02-25 11:13:24 local ERROR  ! ()
+2013-02-25 11:13:24 local ERROR SCAN ! Error inserting book "../books/en/Fantasy/Lewis Carroll/pg28885-images" (author: "Lewis Carroll", genre "Fantasy")
+2013-02-25 11:13:24 local ERROR  ! ()
+2013-02-25 11:13:24 local ERROR SCAN ! Error inserting book "../books/en/Epic Novel/Victor Hugo/pg135-images" (author: "Victor Hugo", genre "Epic Novel")
+2013-02-25 11:13:24 local ERROR  ! ()
+2013-02-25 11:13:24 local INFO SCAN     added: 3, moved: 0, merged: 0
+2013-02-25 11:13:24 local INFO SCAN     eBook files: 0
+2013-02-25 11:13:24 local INFO SCAN * Done
+2013-02-25 11:14:50 local INFO SCAN Scanning ../books [MODE=rebuild]
+2013-02-25 11:14:50 local INFO SCAN * Scanning langDir 'en'
+2013-02-25 11:14:50 local INFO SCAN   + Scanning genre 'Philosophy'
+2013-02-25 11:14:50 local INFO SCAN   + Scanning genre 'Fantasy'
+2013-02-25 11:14:50 local INFO SCAN   + Scanning genre 'Epic Novel'
+2013-02-25 11:14:50 local INFO SCAN * Updating database
+2013-02-25 11:14:50 local INFO SCAN   + Truncating Tables
+2013-02-25 11:14:50 local INFO SCAN   + Inserting Tags (3)
+2013-02-25 11:14:50 local INFO SCAN   + Inserting Authors (3)
+2013-02-25 11:14:50 local INFO SCAN   + Inserting Books (3)
+2013-02-25 11:14:50 local INFO SCAN     added: 3, moved: 0, merged: 0
+2013-02-25 11:14:50 local INFO SCAN     eBook files: 3
+2013-02-25 11:14:50 local INFO SCAN * Done
+2013-02-25 11:19:57 local INFO SCAN Scanning ../books [MODE=rebuild]
+2013-02-25 11:19:57 local INFO SCAN * Scanning langDir 'en'
+2013-02-25 11:19:57 local INFO SCAN   + Scanning genre 'Philosophy'
+2013-02-25 11:19:57 local INFO SCAN   + Scanning genre 'Fantasy'
+2013-02-25 11:19:57 local INFO SCAN   + Scanning genre 'Epic Novel'
+2013-02-25 11:19:57 local INFO SCAN * Updating database
+2013-02-25 11:19:57 local INFO SCAN   + Truncating Tables
+2013-02-25 11:19:58 local INFO SCAN   + Inserting Tags (3)
+2013-02-25 11:19:58 local INFO SCAN   + Inserting Authors (3)
+2013-02-25 11:19:58 local INFO SCAN   + Inserting Books (3)
+2013-02-25 11:19:58 local INFO SCAN     added: 3, moved: 0, merged: 0
+2013-02-25 11:19:58 local INFO SCAN     eBook files: 3
+2013-02-25 11:19:58 local INFO SCAN * Done
+2013-02-25 11:22:12 local INFO SCAN Scanning ../books [MODE=rebuild]
+2013-02-25 11:22:12 local INFO SCAN * Scanning langDir 'en'
+2013-02-25 11:22:12 local INFO SCAN   + Scanning genre 'Philosophy'
+2013-02-25 11:22:12 local INFO SCAN   + Scanning genre 'Fantasy'
+2013-02-25 11:22:12 local INFO SCAN   + Scanning genre 'Epic Novel'
+2013-02-25 11:22:12 local INFO SCAN * Updating database
+2013-02-25 11:22:12 local INFO SCAN   + Truncating Tables
+2013-02-25 11:22:13 local INFO SCAN   + Inserting Tags (3)
+2013-02-25 11:22:13 local INFO SCAN   + Inserting Authors (3)
+2013-02-25 11:22:13 local INFO SCAN   + Inserting Books (3)
+2013-02-25 11:22:13 local INFO SCAN     added: 3, moved: 0, merged: 0
+2013-02-25 11:22:13 local INFO SCAN     eBook files: 3
+2013-02-25 11:22:13 local INFO SCAN * Done
+2013-02-25 11:23:32 local INFO SCAN Scanning ../books [MODE=rebuild]
+2013-02-25 11:23:32 local INFO SCAN * Scanning langDir 'en'
+2013-02-25 11:23:32 local INFO SCAN   + Scanning genre 'Philosophy'
+2013-02-25 11:23:32 local INFO SCAN   + Scanning genre 'Fantasy'
+2013-02-25 11:23:32 local INFO SCAN   + Scanning genre 'Epic Novel'
+2013-02-25 11:23:32 local INFO SCAN * Updating database
+2013-02-25 11:23:32 local INFO SCAN   + Truncating Tables
+2013-02-25 11:23:33 local INFO SCAN   + Inserting Tags (3)
+2013-02-25 11:23:33 local INFO SCAN   + Inserting Authors (3)
+2013-02-25 11:23:33 local INFO SCAN   + Inserting Books (3)
+2013-02-25 11:23:33 local INFO SCAN     added: 3, moved: 0, merged: 0
+2013-02-25 11:23:33 local INFO SCAN     eBook files: 3
+2013-02-25 11:23:33 local INFO SCAN * Done
+2013-02-25 11:23:48 local INFO SCAN Scanning ../books [MODE=rebuild]
+2013-02-25 11:23:48 local INFO SCAN * Scanning langDir 'en'
+2013-02-25 11:23:48 local INFO SCAN   + Scanning genre 'Philosophy'
+2013-02-25 11:23:48 local INFO SCAN   + Scanning genre 'Fantasy'
+2013-02-25 11:23:48 local INFO SCAN   + Scanning genre 'Epic Novel'
+2013-02-25 11:23:48 local INFO SCAN * Updating database
+2013-02-25 11:23:48 local INFO SCAN   + Truncating Tables
+2013-02-25 11:23:49 local INFO SCAN   + Inserting Tags (3)
+2013-02-25 11:23:49 local INFO SCAN   + Inserting Authors (3)
+2013-02-25 11:23:49 local INFO SCAN   + Inserting Books (3)
+2013-02-25 11:23:49 local INFO SCAN     added: 3, moved: 0, merged: 0
+2013-02-25 11:23:49 local INFO SCAN     eBook files: 3
+2013-02-25 11:23:49 local INFO SCAN * Done
+2013-02-25 11:23:57 local INFO SCAN Scanning ../books [MODE=rebuild]
+2013-02-25 11:23:57 local INFO SCAN * Scanning langDir 'en'
+2013-02-25 11:23:57 local INFO SCAN   + Scanning genre 'Philosophy'
+2013-02-25 11:23:57 local INFO SCAN   + Scanning genre 'Fantasy'
+2013-02-25 11:23:57 local INFO SCAN   + Scanning genre 'Epic Novel'
+2013-02-25 11:23:57 local INFO SCAN * Updating database
+2013-02-25 11:23:57 local INFO SCAN   + Truncating Tables
+2013-02-25 11:23:57 local INFO SCAN   + Inserting Tags (3)
+2013-02-25 11:23:58 local INFO SCAN   + Inserting Authors (3)
+2013-02-25 11:23:58 local INFO SCAN   + Inserting Books (3)
+2013-02-25 11:23:58 local INFO SCAN     added: 3, moved: 0, merged: 0
+2013-02-25 11:23:58 local INFO SCAN     eBook files: 3
+2013-02-25 11:23:58 local INFO SCAN * Done
+2013-02-25 11:24:21 local INFO SCAN Scanning ../books [MODE=rebuild]
+2013-02-25 11:24:21 local INFO SCAN * Scanning langDir 'en'
+2013-02-25 11:24:21 local INFO SCAN   + Scanning genre 'Philosophy'
+2013-02-25 11:24:21 local INFO SCAN   + Scanning genre 'Fantasy'
+2013-02-25 11:24:21 local INFO SCAN   + Scanning genre 'Epic Novel'
+2013-02-25 11:24:21 local INFO SCAN * Updating database
+2013-02-25 11:24:21 local INFO SCAN   + Truncating Tables
+2013-02-25 11:24:21 local INFO SCAN   + Inserting Tags (3)
+2013-02-25 11:24:21 local INFO SCAN   + Inserting Authors (3)
+2013-02-25 11:24:21 local INFO SCAN   + Inserting Books (3)
+2013-02-25 11:24:21 local INFO SCAN     added: 3, moved: 0, merged: 0
+2013-02-25 11:24:21 local INFO SCAN     eBook files: 3
+2013-02-25 11:24:21 local INFO SCAN * Done
+2013-02-25 11:32:52 local INFO SCAN Scanning ../books [MODE=rebuild]
+2013-02-25 11:32:52 local INFO SCAN * Scanning langDir 'en'
+2013-02-25 11:32:52 local INFO SCAN   + Scanning genre 'Philosophy'
+2013-02-25 11:32:52 local INFO SCAN   + Scanning genre 'Fantasy'
+2013-02-25 11:32:52 local INFO SCAN   + Scanning genre 'Epic Novel'
+2013-02-25 11:32:52 local INFO SCAN * Updating database
+2013-02-25 11:32:52 local INFO SCAN   + Truncating Tables
+2013-02-25 11:32:52 local INFO SCAN   + Inserting Tags (3)
+2013-02-25 11:32:52 local INFO SCAN   + Inserting Authors (3)
+2013-02-25 11:32:52 local INFO SCAN   + Inserting Books (3)
+2013-02-25 11:32:52 local INFO SCAN     added: 3, moved: 0, merged: 0
+2013-02-25 11:32:52 local INFO SCAN     eBook files: 3
+2013-02-25 11:32:52 local INFO SCAN * Done
+2013-02-25 11:33:00 local INFO SCAN Scanning ../books [MODE=rebuild]
+2013-02-25 11:33:00 local INFO SCAN * Scanning langDir 'en'
+2013-02-25 11:33:00 local INFO SCAN   + Scanning genre 'Philosophy'
+2013-02-25 11:33:00 local INFO SCAN   + Scanning genre 'Fantasy'
+2013-02-25 11:33:00 local INFO SCAN   + Scanning genre 'Epic Novel'
+2013-02-25 11:33:00 local INFO SCAN * Updating database
+2013-02-25 11:33:00 local INFO SCAN   + Truncating Tables
+2013-02-25 11:33:01 local INFO SCAN   + Inserting Tags (3)
+2013-02-25 11:33:01 local INFO SCAN   + Inserting Authors (3)
+2013-02-25 11:33:01 local INFO SCAN   + Inserting Books (3)
+2013-02-25 11:33:01 local INFO SCAN     added: 3, moved: 0, merged: 0
+2013-02-25 11:33:01 local INFO SCAN     eBook files: 3
+2013-02-25 11:33:01 local INFO SCAN * Done

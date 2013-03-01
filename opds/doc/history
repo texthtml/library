@@ -1,0 +1,97 @@
+$Id$
+
+History for miniCalOPe
+======================
+
+v1.9.0
+-------------------
++ added optional Amazon ads (decent!) to book details page
+
+v1.8.0 (16.02.2013)
+-------------------
+! SCAN: Merge crashed when started with empty DB
+! fix some logic in merging series
+* make alphabetical ordering default for tags
+* added viewport-meta to all (HTML) pages, so they should be readable on mobile devices
+  without zooming now
+* have authors ordered by name per default
+! fixed mime of book download links in OPDS
++ added FB2 to formats list
+* replacing "PHP short_tags" with "full tags"
+* several updates to the db classes (a.o. to make it work with PHP5/SQLite3 again without additional modules)
+
+v1.7.0 (24.03.2012)
+-------------------
+! last change of get_filenames() broke eBook download when book file was replaced but
+  database not (yet) updated, as Content-Length (from database) did no longer match.
+  To prevent this (admittedly rare cases), for Content-Length we revert to filesize()
+! if multiple books had the same filename, scan only got the last one
++ SCAN: placing inserts into transactions (speedup inserts by factor 20!)
++ SCAN: added 'merge' mode (still experimental). Using this the scan process tries
+  to figure out what has changed, and merge in these changes - as opposed to the
+  'rebuild' (as used up to now) which simply drops all information and builds all
+  up from the scratch
+
+v1.6.3 (19.12.2011)
+-------------------
+! the alternate "title" (from *.data) broke the download, as title was used to check the filename
+! last change of get_filenames() broke eBook download (extension was lost)
+* in places where lists could be ordered by date/time, inverted the order to show newest entries first
+
+v1.6.0 (08.12.2011)
+-------------------
++ Support for Amazon Partner-ID in ISBN-Links
++ added check for unencoded '&' in HREFs (when check_xml enabled)
++ optionally generating fake covers if no cover image available (HTML only)
++ added "title" attribute to *.data files to specify books title (if differing from file name)
++ added title search links to HTML view (to search for the selected book by author + title)
++ added check (and "auto-repair") for unescaped & in descriptions (to prevent trouble with XML)
+
+v1.5.0
+-------------------
++ make it easy to add more book formats (definitions kept in lib/formats.csv)
+! if client transmitted "lang=" (w/o specifying any lang), book download sent a different book than requested
+! PDF was using wrong mimetype on download
+! download did not consider the "name" url parameter
+* WillaMovius has closed (Amazon.DE ISBN Search), so we had to replace it
+
+v1.4.0 (06.05.2011)
+-------------------
+* some better input handling for DB storage (escaping etc.)
+! book details page was broken for OPDS
+* scan no longer aborts when a book title failed (just logs the error and skips the book)
++ added simple XML check for description files
+- removed $debug variable from sample configs (no longer used)
+
+v1.3.0 (06.03.2011)
+-------------------
+! search template was not committed to repository
+! pagination was broken in title list and search results
+* wildcards ("*") in search terms truncated the whole term being treated as "vulnerable"
++ added ISBN-links to HTML version
++ more logging details on scan + webif
++ offering search-plugin to Firefox (so search can be triggered from its search bar)
+
+v1.2.0 (21.02.2011)
+-------------------
++ added possibility for "permlinks" using the URL param "name"
+* changed URL param "default_prefix" to "prefix" (shorter URL)
++ added search functionality (search form for now HTML only)
++ added OpenSearch support (integrated with OPDS and above search functionality)
++ more cover images detected
++ added and integrated regular logging class
+
+v1.1.0 (30.01.2011)
+-------------------
++ added metadata file support (*.data): books now can have multiple tags, series, isbn...
++ series support: added separate entry point on top-level
++ added localization (English, German)
++ uri, publisher and rating are now also supported in the metadata file
++ added back-links from book details to author and, if available, series
+
+v1.0.0 (21.01.2011)
+-------------------
+* first public version
++ OPDS and HTML support
++ Calibre backend support
++ directory support (for own file base)

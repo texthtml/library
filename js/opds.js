@@ -9,7 +9,6 @@
 		register: function($opds_server) {
 			var $server = Object.create(OPDS_Server, {$uri: {value: $opds_server}});
 			$servers.push($server);
-			$server_by_id[$opds_server] = $server;
 		}, 
 		servers: function() {
 			return $servers;
@@ -24,22 +23,21 @@
 			var $a = document.createElement('a');
 			$a.href = $uri;
 			
-			if($a.host === window.location.host) {
-				if(this.$root !== undefined) {
-					$a.href = this.$uri;
-					$uri = 'http://' + $a.host + '/' + $uri;
-				}
-				else {
-					$uri = 'http://' + $uri;
-				}
+			if($a.host === window.location.host && this.$uri !== location.origin) {
+				$a.href = 'http://' + this.host() + $uri;
 			}
 			
+			var $server = this;
 			var $xhr = new XMLHttpRequest({mozSystem: true});
-			$xhr.open('GET', $uri);
+			$xhr.open('GET', $a.href);
 			$xhr.responseType = 'document';
 			$xhr.onreadystatechange = function($event) {
 				if(this.readyState === 4) {
 					if(this.status === 200) {
+						if($server.$host === undefined) {
+							$server.$host = $a.host;
+						}
+						
 						$callback(this.response);
 					}
 					else {
@@ -49,36 +47,49 @@
 			};
 			$xhr.send();
 		}, 
+		host: function() {
+			return this.$host || '';
+		}, 
 		root: Utils.cache(function($callback) {
-			var $uri = document.createElement('a');
-			$uri.href = this.$uri;
 			this.get(this.$uri, function($doc) {
 				if($doc === null) {
 					$callback($doc);
 				}
 				else {
-					var $start = $doc.querySelector('feed > link[rel=start]');
+					var $end = function($doc) {
+						var $id = $doc.querySelector('feed > id');
+						if($id) {
+							$server_by_id[$id.textContent] = this;
+						}
+
+						$callback($doc);
+					}.bind(this);
+
+					var $start = $doc.querySelector('feed > link[rel=start],head > link[type="application/atom+xml;profile=opds-catalog"],head > link[type="application/atom+xml;profile=opds-catalog;kind=navigation"]');
 					
-					var $start_uri = $start.getAttribute('href');
-					if($uri.pathname+$uri.search !== $start_uri) {
-						this.get($uri.protocol+'//'+$uri.host+$start_uri, $callback);
+					if($start !== null) {
+						$start = $start.getAttribute('href');
+					}
+
+					if($start !== null && this.$uri !== $start) {
+						this.get($start, $end);
 					}
 					else {
-						$callback($doc);
+						$end($doc);
 					}
 				}
 			}.bind(this));
 		}, '$root'), 
 		id: function($callback) {
 			this.root(function($root) {
-				if($root === null) {
-					$callback(null);
+				var $id = null;
+				if($root !== null) {
+					$id = $root.querySelector('feed > id');
 				}
-				else {
-					$callback(
-						$root.querySelector('feed > id').textContent
-					);
+				if($id !== null) {
+					$id = $id.textContent;
 				}
+				$callback($id);
 			});
 		}, 
 		title: function($callback) {
@@ -87,9 +98,13 @@
 					$callback(null);
 				}
 				else {
+					var 
+						$title = $root.querySelector('feed > title'), 
+						$subtitle = $root.querySelector('feed > subtitle');
+
 					$callback(
-						$root.querySelector('feed > title').textContent, 
-						$root.querySelector('feed > subtitle').textContent
+						$title ? $title.textContent : null, 
+						$subtitle ? $subtitle.textContent : null
 					);
 				}
 			});
@@ -100,8 +115,9 @@
 					$callback(null);
 				}
 				else {
+					var $icon = $root.querySelector('feed > icon');
 					$callback(
-						$root.querySelector('feed > icon').textContent
+						$icon ? $icon.textContent : null
 					);
 				}
 			});

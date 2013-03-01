@@ -11,12 +11,13 @@
 @headerh  : 3rem;
 @footerh  : 3rem;
 
-@fast     :  150ms;
-@normal   :  250ms;
-@slow     :  400ms;
+@fast     :   75ms;
+@normal   :  150ms;
+@slow     :  350ms;
 @extraslow:     1s;
 
-@defaultspeed: @normal;
+@defaultspeed  : @slow;
+@defaulttiming : ease-out;
 
 html, body {
 	overflow: hidden;
@@ -38,7 +39,7 @@ a {
 }
 
 body > div {
-	-moz-transition: left @defaultspeed;
+	transition: left @defaultspeed @defaulttiming;
 	
 	height: 100%;
 	width: 100%;
@@ -225,7 +226,7 @@ body > div {
 				&.top {
 					z-index: 2;
 					opacity: 1;
-					-moz-transition: opacity @defaultspeed;
+					-moz-transition: opacity @defaultspeed @defaulttiming;
 					
 					&.swiped-enough {
 						opacity: 0.85;
@@ -286,6 +287,7 @@ body > div {
 		& > div.content {
 			bottom: 0;
 			padding: 0 1rem;
+			-moz-box-sizing: padding-box;
 		}
 		
 		&.toc {
@@ -404,10 +406,6 @@ html.apps[data-installed=false] button#install {
 			font-weight: lighter;
 		}
 	}
-}
-
-#import_ebook_opds {
-	display: none;
 }
 
 #settings {

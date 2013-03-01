@@ -1,7 +1,7 @@
 html,body{overflow:hidden;height:100%;width:100%;padding:0;margin:0;position:absolute;left:0;}
 body{width:100%;}
 a{text-decoration:none;color:#0a1b26;}
-body>div{-moz-transition:left 250ms;height:100%;width:100%;position:fixed;left:100%;}body>div>header,body>div>footer{-moz-box-sizing:border-box;box-sizing:border-box;position:absolute;left:0;right:0;}
+body>div{transition:left 350ms ease-out;height:100%;width:100%;position:fixed;left:100%;}body>div>header,body>div>footer{-moz-box-sizing:border-box;box-sizing:border-box;position:absolute;left:0;right:0;}
 body>div>header{top:0;background:#00539f;}body>div>header h1{margin:0;line-height:3rem;padding-left:0.5rem;float:left;}
 body>div>div.content{position:absolute;top:3rem;bottom:3rem;overflow:auto;width:100%;}
 body>div>footer{height:3rem;bottom:0;background:#6a7b86;}body>div>footer nav ul{padding:0;margin:0;}body>div>footer nav ul li{float:left;width:33%;line-height:3rem;text-align:center;font-size:0.8em;}body>div>footer nav ul li a{display:block;}
@@ -16,7 +16,7 @@ body>div.library .content ul li .search-content{display:none;}
 body>div.ebook:not(.pane){left:100%;}body>div.ebook:not(.pane) header a{float:left;line-height:3rem;}
 body>div.ebook:not(.pane) header button{float:right;line-height:3rem;border:0;}
 body>div.ebook:not(.pane) .content{background:white;overflow:hidden;}body>div.ebook:not(.pane) .content iframe{display:block;border:0;width:100%;height:100%;z-index:0;position:absolute;left:0px;top:0px;background:white;}body>div.ebook:not(.pane) .content iframe.under{z-index:1;}
-body>div.ebook:not(.pane) .content iframe.top{z-index:2;opacity:1;-moz-transition:opacity 250ms;}body>div.ebook:not(.pane) .content iframe.top.swiped-enough{opacity:0.85;}
+body>div.ebook:not(.pane) .content iframe.top{z-index:2;opacity:1;-moz-transition:opacity 350ms ease-out;}body>div.ebook:not(.pane) .content iframe.top.swiped-enough{opacity:0.85;}
 body>div.ebook:not(.pane) .content.uncover-pages iframe.top{box-shadow:0 0 5px 2px black;}
 body>div.pane.ebook.target~.ebook:not(.pane),body>div.ebook:not(.pane).target{left:0%;}
 body>div.pane.ebook.target~.library,body>div.ebook.target~.library{left:-100%;}
@@ -24,7 +24,7 @@ body>div.pane{z-index:1;width:calc(100% - 2rem);left:-100%;background:#f5efe6;}b
 body>div.pane.target{left:0%;z-index:3;position:absolute;}body>div.pane.target>a.back{right:-2rem;}
 body>div.pane.target~.library{left:calc(100% - 2rem);}
 body>div.pane.target.ebook~.ebook:not(.pane){left:calc(100% - 2rem);}
-body>div.pane>div.content{bottom:0;padding:0 1rem;}
+body>div.pane>div.content{bottom:0;padding:0 1rem;-moz-box-sizing:padding-box;}
 body>div.pane.toc navLabel{color:blue;cursor:pointer;}
 body>div.pane.toc navLabel:hover{text-decoration:underline;}
 body>div.pane.toc navPoint{display:block;padding-left:1em;}
@@ -38,7 +38,6 @@ html.apps[data-uptodate=false][data-installed=true] button#update,html.apps[data
 #opds ul button hgroup h1{font-size:1.1em;}
 .opds-feed ol{list-style:none;padding:0;}.opds-feed ol button{width:100%;padding:0;border:0;background:none;text-align:left;}.opds-feed ol button em *{vertical-align:middle;line-height:1.5em;max-height:1.5em;}
 .opds-feed ol button div{font-weight:lighter;}
-#import_ebook_opds{display:none;}
 #settings .content{background:#ccc;padding:0;}
 #settings ul{margin:0;padding:0;list-style:none;width:100%;}#settings ul h2,#settings ul h3{font-size:1em;font-weight:normal;margin:0;display:inline;}
 #settings ul h2{margin-left:1rem;}
