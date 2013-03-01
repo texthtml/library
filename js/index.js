@@ -794,6 +794,8 @@ document.addEventListener('DOMContentLoaded', function() {
 							if($move_callback !== undefined) {
 								$move_callback();
 							}
+							
+							save_reading_position($ebook_id, $ebook_spine, $ebook_hash, $settings);
 						}
 					};
 				
@@ -1351,8 +1353,11 @@ document.addEventListener('DOMContentLoaded', function() {
 			return function($ebook_id, $ebook_spine, $ebook_hash, $settings) {
 				// only clear timeout if it's still the same book
 				if($timeout !== null && $ebook === $ebook_id) {
-					save_reading_position.last_position;
 					window.clearTimeout($timeout);
+				}
+				
+				if($ebook !== $ebook_id) {
+					save_reading_position.last_position = undefined;
 				}
 				
 				$ebook = $ebook_id;
