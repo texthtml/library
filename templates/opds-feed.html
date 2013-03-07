@@ -11,6 +11,7 @@
 		{{selector 'link[rel=start]' feed}}
 			<li>
 				<button data-next="{{>getAttribute('href')}}">{{>getAttribute('title')}}</button>
+				<hr/>
 			</li>
 		{{/selector}}
 		
@@ -19,11 +20,13 @@
 				{{if getAttribute('href') !== #parent.data.getAttribute('href')}}
 					<li>
 						<button data-next="{{>getAttribute('href')}}">{{>getAttribute('title')}}</button>
+						<hr/>
 					</li>
 				{{/if}}
 			{{/selector}}
 			<li>
 				<button data-next="{{>getAttribute('href')}}">{{>getAttribute('title')}}</button>
+				<hr/>
 			</li>
 		{{/selector}}
 		
