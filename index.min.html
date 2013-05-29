@@ -7,12 +7,12 @@
 		<meta name="viewport" content="width=device-width">
 		
 		<link type="text/css" rel="stylesheet" href="style/normalize.css" />
-		<link type="text/css" rel="stylesheet" href="style/index.css" />
+		<link type="text/css" rel="stylesheet" href="style/index.min.css" />
 		
 		<link type="application/atom+xml;profile=opds-catalog" href="/opds/" />
 		
-		<script data-main="js/index.js" src="components/requirejs/require.js"></script>
-		<script src="components/modernizr/modernizr.js"></script>
+		<script data-main="js/index.min.js" src="js/vendor/min/require.js"></script>
+		<script src="js/vendor/min/modernizr.js"></script>
 		
 		<link rel="start" type="application/atom+xml;profile=opds-catalog" href="/opds/" />
 	</head>
@@ -24,6 +24,7 @@
 			
 			<div class="content">
 				<p>not implemented</p>
+				<button onclick="document.location.reload()">reload</button>
 			</div>
 			
 			<a class="back" href="#library" data-prefix="library">Back</a>

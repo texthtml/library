@@ -1,4 +1,43 @@
-document.addEventListener('DOMContentLoaded', function() {
+requirejs.config({
+	shim: {
+		'../components/zip.js/WebContent/zip': {
+			exports: 'zip'
+		}, 
+		'vendor/jsrender/jsrender': {
+			exports: 'jsviews'
+		}, 
+		'web-reader': {
+			exports: 'WR', 
+			deps: ['trigger']
+		}, 
+		'trigger': {
+			exports: 'Trigger'
+		}, 
+		'opds': {
+			exports: 'OPDS', 
+			deps: ['utils']
+		}, 
+		'utils': {
+			exports: 'Utils'
+		}, 
+		'archivereader': {
+			exports: 'ArchiveReader', 
+			deps: ['utils']
+		}, 
+		'epub': {
+			deps: ['web-reader', 'archivereader', 'utils']
+		}
+	}
+});
+
+require([
+	'../components/zip.js/WebContent/zip', 
+	'vendor/jsrender/jsrender', 
+	'web-reader', 
+	'opds', 
+	'utils', 
+	'epub'
+], function(zip, jsviews, WR, OPDS, Utils) {
 	"use strict";
 	
 	var 
@@ -11,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		$filter_el           = $library_el.querySelector('input[name=filter]');
 	
 	
-	zip.workerScriptsPath = 'js/vendor/zip/WebContent/'
+	zip.workerScriptsPath = 'components/zip.js/WebContent/';
 	
 	
 	jsviews.helpers({

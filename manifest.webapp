@@ -1,18 +1,18 @@
 {
-  "name": "Library",
-  "description": "Manage and read books.",
-  "version": "201210111652", 
-  
-  "launch_path": "/",
-
-  "developer": {
-    "name": "Mathieu Rochette",
-    "url": "https://mathieu.rochette.cc/"
-  },
-  
-  "icons": {
-    "128": "/images/web-reader.png"
-  },
-  
-  "default_locale": "en"
+	"name": "Library",
+	"description": "Manage and read books.",
+	"version": "201210111652", 
+	
+	"launch_path": "/index.min.html",
+	
+	"developer": {
+		"name": "Mathieu Rochette",
+		"url": "https://mathieu.rochette.cc/"
+	},
+	
+	"icons": {
+		"128": "/images/web-reader.png"
+	},
+	
+	"default_locale": "en"
 }
