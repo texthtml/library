@@ -11,7 +11,6 @@
 		{{selector 'link[rel=start]' feed}}
 			<li>
 				<button data-next="{{>getAttribute('href')}}">{{>getAttribute('title')}}</button>
-				<hr/>
 			</li>
 		{{/selector}}
 		
@@ -20,18 +19,16 @@
 				{{if getAttribute('href') !== #parent.data.getAttribute('href')}}
 					<li>
 						<button data-next="{{>getAttribute('href')}}">{{>getAttribute('title')}}</button>
-						<hr/>
 					</li>
 				{{/if}}
 			{{/selector}}
 			<li>
 				<button data-next="{{>getAttribute('href')}}">{{>getAttribute('title')}}</button>
-				<hr/>
 			</li>
 		{{/selector}}
 		
 		{{selectorAll 'entry' feed}}
-			<li>
+			<li class="entry">
 				{{selector 'link[type="application/atom+xml;profile=opds-catalog"],link[type="application/atom+xml;profile=opds-catalog;kind=navigation"],link[type="application/atom+xml;type=entry;profile=opds-catalog"],link[type="application/atom+xml"],link[type="application/atom+xml;profile=opds-catalog;kind=acquisition"]'}}
 					<button data-next="{{>getAttribute('href')}}">
 				{{/selector}}
@@ -47,11 +44,7 @@
 				{{selector 'content[type=text]'}}
 					<div>{{>textContent}}</div>
 				{{/selector}}
-				{{selector 'content[type=xhtml]'}}
-					<div>{{selector '*'}}{{:innerHTML}}{{/selector}}</div>
-				{{/selector}}
-
-				<hr/>
+				
 				<ul>
 				{{selectorAll 'link'}}
 					{{if ~ebook_formats()[getAttribute('type')]}}
@@ -62,6 +55,10 @@
 					{{/if}}
 				{{/selectorAll}}
 				</ul>
+				
+				{{selector 'content[type=xhtml]'}}
+					<div>{{selector '*'}}{{:innerHTML}}{{/selector}}</div>
+				{{/selector}}
 				
 				{{ifselector 'link[type="application/atom+xml;profile=opds-catalog;kind=navigation"][rel=related],link[type="application/atom+xml;profile=opds-catalog"][rel=related]'}}
 					<h2>Related books</h2>

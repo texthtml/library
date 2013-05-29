@@ -36,8 +36,9 @@ html.apps[data-uptodate=false][data-installed=true] button#update,html.apps[data
 #opds ul{list-style:none;padding:0;}#opds ul button{width:100%;border:0;padding:0;background:none;text-align:left;}#opds ul button img{margin-right:3px;vertical-align:middle;}
 #opds ul button hgroup{display:inline-block;vertical-align:middle;}#opds ul button hgroup *{margin:0;font-weight:normal;text-align:left;font-size:1em;}
 #opds ul button hgroup h1{font-size:1.1em;}
-.opds-feed ol{list-style:none;padding:0;}.opds-feed ol button{width:100%;padding:0;border:0;background:none;text-align:left;}.opds-feed ol button em *{vertical-align:middle;line-height:1.5em;max-height:1.5em;}
-.opds-feed ol button div{font-weight:lighter;}
+.opds-feed>ol{list-style:none;padding:0;}.opds-feed>ol>li:not(:last-child){border-bottom:2px solid black;}
+.opds-feed>ol button:not([data-type]){width:100%;padding:0;border:0;background:none;text-align:left;}.opds-feed>ol button:not([data-type]) em *{vertical-align:middle;line-height:1.5em;max-height:1.5em;}
+.opds-feed>ol button:not([data-type]) div{font-weight:lighter;}
 #settings .content{background:#ccc;padding:0;}
 #settings ul{margin:0;padding:0;list-style:none;width:100%;}#settings ul h2,#settings ul h3{font-size:1em;font-weight:normal;margin:0;display:inline;}
 #settings ul h2{margin-left:1rem;}

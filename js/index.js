@@ -1770,11 +1770,11 @@ require([
 	window.addEventListener('hashchange', hash_change);
 	$wr.addEventListener('initied', hash_change);
 	
-	// OPDS.register('www.smashwords.com/atom');
-	// OPDS.register('http://manybooks.net/opds/');
+	OPDS.register('www.smashwords.com/atom');
+	OPDS.register('http://manybooks.net/opds/');
+	OPDS.register('http://m.gutenberg.org');
 	OPDS.register('http://www.feedbooks.com');
-	// OPDS.register('http://cops-demo.slucas.fr/');
-	// OPDS.register('http://m.gutenberg.org');
+	OPDS.register('http://cops-demo.slucas.fr/');
 	OPDS.register(location.origin);
 	
 	$wr.init();
